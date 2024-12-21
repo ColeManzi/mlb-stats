@@ -77,9 +77,12 @@ function App() {
 
   const handlePlayerClick = async (player) => {
       setSelectedPlayer(player);
+      setDropdownVisible(false); // Hide the dropdown after selecting a player
+      setRosterData(false);
       await fetchPlayerStats(player.person.id);
       await fetchPlayerSummary(player.person.fullName); // Call Gemini API
-      setDropdownVisible(false); // Hide the dropdown after selecting a player
+
+
   };
 
     const handleInputChange = (e) => {
@@ -207,6 +210,12 @@ function App() {
             ))}
           </ul>
         )}
+      </div>
+      <div className="Card-container-left">
+        <h1 className='title'>Recent News</h1>
+      </div>
+      <div className="Card-container-right">
+        <h1 className='title'>Your Interest</h1>
       </div>
     </div>
   );
