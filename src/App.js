@@ -1,17 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import './App.css';
+import mlbLogo from './assets/mlb_logo.png';
 
 function App() {
-  const [teamName, setTeamName] = useState('');
-  const [teams, setTeams] = useState([]);
-  const [selectedTeam, setSelectedTeam] = useState(null);
-  const [rosterData, setRosterData] = useState(null);
-  const [rosterLoading, setRosterLoading] = useState(false);
-  const [rosterError, setRosterError] = useState(null);
+    const [teamName, setTeamName] = useState('');
+    const [teams, setTeams] = useState([]);
+    const [selectedTeam, setSelectedTeam] = useState(null);
+    const [rosterData, setRosterData] = useState(null);
+    const [rosterLoading, setRosterLoading] = useState(false);
+    const [rosterError, setRosterError] = useState(null);
 
-  const [selectedPlayer, setSelectedPlayer] = useState(null);
-  const [playerStats, setPlayerStats] = useState(null);
-  const [statsLoading, setStatsLoading] = useState(false);
-  const [statsError, setStatsError] = useState(null);
+    const [selectedPlayer, setSelectedPlayer] = useState(null);
+    const [playerStats, setPlayerStats] = useState(null);
+    const [statsLoading, setStatsLoading] = useState(false);
+    const [statsError, setStatsError] = useState(null);
+
+    const [dropdownVisible, setDropdownVisible] = useState(true); // State to control dropdown visibility
+
+    const [playerSummary, setPlayerSummary] = useState(null);
+    const [summaryLoading, setSummaryLoading] = useState(false);
+    const [summaryError, setSummaryError] = useState(null);
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -33,7 +41,6 @@ function App() {
         setTeams(matchingTeams);
       } catch (error) {
         console.error("Error fetching teams:", error);
-        //Consider adding error handling here to display an error message to the user.
       }
     };
     fetchTeams();
@@ -63,15 +70,22 @@ function App() {
   }, [selectedTeam]);
 
   const handleTeamClick = (team) => {
-    setSelectedTeam(team);
-    setTeamName(team.name);
+      setSelectedTeam(team);
+      setTeamName(team.name);
+      setDropdownVisible(false); // Hide the dropdown after selecting a team
   };
 
-  const handlePlayerClick = (player) => {
-    setSelectedPlayer(player);
-    fetchPlayerStats(player.person.id);
+  const handlePlayerClick = async (player) => {
+      setSelectedPlayer(player);
+      await fetchPlayerStats(player.person.id);
+      await fetchPlayerSummary(player.person.fullName); // Call Gemini API
+      setDropdownVisible(false); // Hide the dropdown after selecting a player
   };
 
+    const handleInputChange = (e) => {
+        setTeamName(e.target.value);
+        setDropdownVisible(true); // Show the dropdown when input changes
+    };
   const fetchPlayerStats = async (playerId) => {
     setStatsLoading(true);
     setStatsError(null);
@@ -98,77 +112,101 @@ function App() {
     }
   };
 
-  return (
-    <div className="App" style={{ fontFamily: 'sans-serif', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f0f0f0' }}>
-      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' }}>
-        <header style={{ textAlign: 'center' }}>
-          <h1 style={{ fontSize: '2em', marginBottom: '10px' }}>MLB Stats</h1>
+  const { GoogleGenerativeAI } = require("@google/generative-ai"); // Import the GoogleGenerativeAI class
 
+  const fetchPlayerSummary = async (playerName) => {
+      const apiKey = process.env.REACT_APP_API_KEY; // Replace with your actual API key
+      // Initialize the GoogleGenerativeAI client with the API key
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+      const prompt = `Tell me a little about the baseball player ${playerName}. Include their latest performance. 2-3 sentences max.`;
+
+      try {
+          // Generate content using the generative AI model
+          const result = await model.generateContent(prompt);
+
+          // Access the response text from the result
+          const playerSummary = result.response.text(); // Assuming this is how the result is structured
+
+          // Handle the summary text, e.g., setting the state or doing other operations
+          setPlayerSummary(playerSummary);
+
+      } catch (error) {
+          setSummaryError(error); // Set error state if something goes wrong
+          console.error("Error fetching player summary:", error);
+      } finally {
+          setSummaryLoading(false); // Stop loading indicator or similar
+      }
+  };
+    
+
+  return (
+    <div className="App">
+      <div className="App-search">
+        <img src={mlbLogo} className="App-logo" alt="MLB Logo" />
+        <header>
+          <h1 className='title'>MLB Stats Tracker</h1>
           <input
             type="text"
             placeholder="Enter MLB Team Name"
             value={teamName}
-            onChange={(e) => setTeamName(e.target.value)}
-            style={{ marginBottom: '10px', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', width: '300px' }}
+            onChange={handleInputChange}
+            className='search-bar'
           />
 
-          {teams.length > 0 && (
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {teams.map((team) => (
-                <li
-                  key={team.id}
-                  style={{ marginBottom: '5px', padding: '5px', borderBottom: '1px solid #eee', cursor: 'pointer' }}
-                  onClick={() => handleTeamClick(team)}
-                >
-                  {team.name}
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {rosterLoading && <p>Loading roster...</p>}
-          {rosterError && <p style={{ color: 'red' }}>Error loading roster: {rosterError.message}</p>}
-          {rosterData && (
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {rosterData.map((player) => (
-                <li
-                  key={player.person.id}
-                  style={{ marginBottom: '5px', padding: '5px', borderBottom: '1px solid #eee', cursor: 'pointer' }}
-                  onClick={() => handlePlayerClick(player)}
-                >
-                  {player.person.fullName} - {player.position.name}
-                </li>
-              ))}
-            </ul>
-          )}
+        {dropdownVisible && teams.length > 0 && (
+          <ul>
+            {teams.map((team) => (
+              <li key={team.id} onClick={() => handleTeamClick(team)}>
+                {team.name}
+              </li>
+            ))}
+          </ul>
+        )}
 
           {selectedPlayer && (
-            <div>
+            <div className="player-info">
               {statsLoading && <p>Loading stats...</p>}
-              {statsError && <p style={{ color: 'red' }}>Error loading stats: {statsError.message}</p>}
-              {selectedPlayer && (
-                <div>
-                  <h3>Selected Player Details:</h3>
-                  {statsLoading && <p>Loading stats...</p>}
-                  {statsError && <p style={{ color: 'red' }}>Error loading stats: {statsError.message}</p>}
-                  {playerStats && (
-                    <div>
-                      <h3>{playerStats.fullName}</h3>
-                      <p><strong>Position:</strong> {playerStats.primaryPosition.name}</p>
-                      <p><strong>Throws:</strong> {playerStats.pitchHand.description}</p>
-                      <p><strong>Bats:</strong> {playerStats.batSide.description}</p>
-                      <p><strong>Born:</strong> {playerStats.birthDate} ({playerStats.birthCity}, {playerStats.birthCountry})</p>
-                      <p><strong>Height/Weight:</strong> {playerStats.height} / {playerStats.weight} lbs</p>
-                      <p><strong>MLB Debut:</strong> {playerStats.mlbDebutDate}</p>
-                      <p><strong>Number:</strong> {playerStats.primaryNumber}</p>
-                      {/* Add more relevant stats as needed */}
-                    </div>
-                  )}
+              {statsError && <p className='error'>Error loading stats: {statsError.message}</p>}
+              {playerStats && (
+                <div className="player-stats">
+                  <h3>{playerStats.fullName}</h3>
+                  <p><strong>Position:</strong> {playerStats.primaryPosition.name}</p>
+                  <p><strong>Throws:</strong> {playerStats.pitchHand.description}</p>
+                  <p><strong>Bats:</strong> {playerStats.batSide.description}</p>
+                  <p><strong>Born:</strong> {playerStats.birthDate} ({playerStats.birthCity}, {playerStats.birthCountry})</p>
+                  <p><strong>Height/Weight:</strong> {playerStats.height} / {playerStats.weight} lbs</p>
+                  <p><strong>MLB Debut:</strong> {playerStats.mlbDebutDate}</p>
+                  <p><strong>Number:</strong> {playerStats.primaryNumber}</p>
+                </div>
+              )}
+
+              {summaryLoading && <p>Loading summary...</p>}
+              {summaryError && <p className='error'>Error loading summary: {summaryError.message}</p>}
+              {playerSummary && (
+                <div className="player-summary">
+                  <h3>Player Summary</h3>
+                  <p>{playerSummary}</p>
                 </div>
               )}
             </div>
           )}
+
         </header>
+      </div>
+      <div className="App-feed">
+        {rosterLoading && <p>Loading roster...</p>}
+        {rosterError && <p className='error'>Error loading roster: {rosterError.message}</p>}
+        {rosterData && (
+          <ul>
+            {rosterData.map((player) => (
+              <li key={player.person.id} onClick={() => handlePlayerClick(player)}>
+                {player.person.fullName} - {player.position.name}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

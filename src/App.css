@@ -1,38 +1,162 @@
 .App {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  justify-content: center;
+  align-items: center; /* Center items horizontally within container */
+  min-height: 100vh;
+  background-color: rgb(4, 4, 88);
+  color: white;
+  position: relative;
+}
+
+.App-feed {
+  position: relative;
+  top: 20px;
+  width: 50%;
+  height: 50vh;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
   text-align: center;
+  margin: 20px auto;
+  overflow-y: auto; /* Allow vertical scrolling */
+
+}
+
+.App-feed ul {
+  list-style: none; /* Remove default bullets */
+  padding: 0; /* Remove default padding */
+  margin: 0; /* Remove default margins */
+}
+
+.App-feed ul li {
+  padding: 12px 15px; /* Add vertical and horizontal padding */
+  margin-bottom: 8px; /* Add spacing between items */
+  background-color: #f9f9f9; /* Light gray background */
+  border-radius: 5px; /* Slight rounded corners */
+  border: 1px solid #eee; /* Light border */
+  cursor: pointer; /* Change cursor on hover */
+  transition: background-color 0.2s ease-in-out; /* Smooth hover effect */
+  text-align: left; /* Align text to the left */
+}
+
+.App-feed ul li:hover {
+  background-color: #f0f0f0; /* Slightly darker on hover */
+}
+
+.App-feed ul li strong {
+  font-weight: 600; /* Make the player names slightly bolder */
 }
 
 .App-logo {
-  height: 40vmin;
-  pointer-events: none;
+   position: relative; /* Relative to the parent */
+   top: 20px; /* Adjust this value to move it closer to the top */
+   left: 0px;
+   border-radius: 8px;
+   margin: 0 auto; /* This ensures it's centered horizontally */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.App-search {
+  position: relative; /* Make this a positioning context for the dropdown */
+  top: 0px;
+  width: 50%;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  margin: 10px auto;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.App-search ul {
+  position: absolute; /* Absolute positioning */
+  left: 25%;
+  width: 50%; /* Match width of App-search */
+  background-color: white;
+  border-radius: 0 0 8px 8px; /* Rounded corners only at the bottom */
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
+  z-index: 10; /* Ensure it overlaps other elements */
+  max-height: 20vh; /* Limit the height of the dropdown */
+  overflow-y: auto; /* Allow vertical scrolling */
+  padding: 0; /* Remove default list padding */
+  list-style: none; /* Remove bullet points */
 }
 
-.App-link {
-  color: #61dafb;
+.App-search ul li {
+  padding: 10px;
+  cursor: pointer;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.App-search ul li:hover {
+  background-color: #f0f0f0; /* Highlight on hover */
+}
+
+.title {
+  font-size: 2.5em;
+  margin-bottom: 20px;
+  color: black; /* Title text color */
+}
+
+.search-bar {
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 50%;
+  box-sizing: border-box;
+}
+
+.App ul {
+  list-style: none;
+  padding: 0;
+}
+
+.App li {
+  margin-bottom: 5px;
+  padding: 5px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.App h3 {
+  color: black;
+}
+
+.App p {
+  color: black;
+}
+
+.App p strong {
+  color: black;
+}
+
+.App li {
+  color: black; 
+  margin-bottom: 5px;
+  padding: 5px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.player-info {
+  display: flex; /* Enables flexbox */
+  justify-content: space-between; /* Distributes space between the child elements */
+  gap: 20px; /* Adds spacing between the two sections */
+}
+
+.player-stats, .player-summary {
+  flex: 1; /* Each section will take equal width */
+  padding: 10px;
+  background-color: #f4f4f4;
+  border-radius: 8px;
+}
+
+.player-summary {
+  margin-left: 20px; /* Adds space between the two sections */
+}
+
+.error {
+  color: red;
 }
