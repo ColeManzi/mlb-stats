@@ -8,6 +8,8 @@ import PersonIcon from '@mui/icons-material/Person';
 //import { Modal, TextField, Button, Box } from '@mui/material';
 //import axios from 'axios';
 import Login from '../Login/Login';
+import { useNavigate } from 'react-router-dom';
+
 
 function Home() {
     const [teamName, setTeamName] = useState('');
@@ -29,6 +31,8 @@ function Home() {
     const [summaryError, setSummaryError] = useState(null);
 
     const [starredPlayers, setStarredPlayers] = useState({});
+
+    const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -150,8 +154,17 @@ function Home() {
 
   const [openLogin, setLoginOpen] = useState(false);
   const handleIconClick = () => {
-      setLoginOpen(true);  // Open modal on icon click
-  }
+  const accessToken = localStorage.getItem('accessToken');
+    if (accessToken) {
+        // If a token exists, the user is considered logged in.
+        // Redirect to the /account page
+        navigate('/account');
+    } else {
+        // If no token exists, the user is not logged in
+        // Open the login modal.
+        setLoginOpen(true);
+    }
+  };
   const handleLoginClose = () => {
     setLoginOpen(false); // Close the modal
   };

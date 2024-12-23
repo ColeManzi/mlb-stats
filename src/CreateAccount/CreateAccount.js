@@ -102,7 +102,7 @@ function CreateAccount({ open, handleClose }) {
          <Button type="submit" variant="contained" color="primary">
           Create Account
          </Button>
-          <Button onClick={handleClose}>
+          <Button onClick={handleClose} style={{ marginLeft: `30%`}}>
            Cancel
           </Button>
         </form>

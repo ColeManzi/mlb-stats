@@ -112,8 +112,8 @@
 
 .App-search ul {
   position: absolute; /* Absolute positioning */
-  left: 25%;
-  width: 50%; /* Match width of App-search */
+  left: 26%;
+  width: 48%; /* Match width of App-search */
   background-color: white;
   border-radius: 0 0 8px 8px; /* Rounded corners only at the bottom */
   border: 1px solid #ddd;
@@ -122,6 +122,7 @@
   max-height: 20vh; /* Limit the height of the dropdown */
   overflow-y: auto; /* Allow vertical scrolling */
   padding: 0; /* Remove default list padding */
+  top: 86%;
   list-style: none; /* Remove bullet points */
 }
 
