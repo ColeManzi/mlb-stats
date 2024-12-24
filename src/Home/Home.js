@@ -6,8 +6,9 @@ import StarIcon from '@mui/icons-material/Star';
 import PersonIcon from '@mui/icons-material/Person';
 //import { useNavigate } from "react-router-dom";
 //import { Modal, TextField, Button, Box } from '@mui/material';
-//import axios from 'axios';
+import axios from 'axios';
 import Login from '../Login/Login';
+import Feed from '../Feed/Feed';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -92,8 +93,8 @@ function Home() {
       setSelectedPlayer(player);
       setDropdownVisible(false); // Hide the dropdown after selecting a player
       setRosterData(false);
-      await fetchPlayerStats(player.person.id);
-      await fetchPlayerSummary(player.person.fullName); // Call Gemini API
+      //await fetchPlayerStats(player.person.id);
+      //await fetchPlayerSummary(player.person.fullName); // Call Gemini API
   };
 
   const handleInputChange = (e) => {
@@ -102,11 +103,69 @@ function Home() {
   };
 
   const handleStarClick = (playerId) => {
-    setStarredPlayers((prevState) => ({
-      ...prevState,
-      [playerId]: !prevState[playerId], 
-    }));
+    const accessToken = localStorage.getItem('accessToken');
+    if(!accessToken) {
+      setLoginOpen(true)
+    } else {
+      setStarredPlayers((prevState) => {
+        const isCurrentlyStarred = !!prevState[playerId];
+        if (isCurrentlyStarred) {
+          handleRemovePlayerId(playerId);
+          return {
+            ...prevState,
+            [playerId]: false,
+          };
+        } else {
+          handleAddPlayerId(playerId);
+          return {
+            ...prevState,
+            [playerId]: true,
+          };
+        }
+      });
+    }
   };
+
+  const handleAddPlayerId = async (playerId) => {
+    try {
+      const accessToken = localStorage.getItem('accessToken')
+      const response = await axios.put('http://localhost:5000/api/users', {
+           playerId: playerId
+         }, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+          }
+         });
+      if (response.status === 200) {
+        console.log("Player ID added successfully")
+      } else {
+        console.log("There was an issue adding the Player ID")
+      }
+      } catch (error) {
+        console.error("There was an error adding the player id:", error)
+    }
+  }
+
+  const handleRemovePlayerId = async (playerId) => {
+    try {
+      const accessToken = localStorage.getItem('accessToken')
+      const response = await axios.delete('http://localhost:5000/api/users', {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            },
+        data: {
+            playerId: playerId
+        }
+      });
+      if (response.status === 200) {
+        console.log("Player ID removed successfully")
+      } else {
+        console.log("There was an issue removing the Player ID")
+      }
+      } catch (error) {
+        console.error("There was an error removing the player id:", error)
+      }
+  }
 
   const fetchPlayerStats = async (playerId) => {
     setStatsLoading(true);
@@ -154,16 +213,16 @@ function Home() {
 
   const [openLogin, setLoginOpen] = useState(false);
   const handleIconClick = () => {
-  const accessToken = localStorage.getItem('accessToken');
-    if (accessToken) {
-        // If a token exists, the user is considered logged in.
-        // Redirect to the /account page
-        navigate('/account');
-    } else {
-        // If no token exists, the user is not logged in
-        // Open the login modal.
-        setLoginOpen(true);
-    }
+    const accessToken = localStorage.getItem('accessToken');
+      if (accessToken) {
+          // If a token exists, the user is considered logged in.
+          // Redirect to the /account page
+          navigate('/account');
+      } else {
+          // If no token exists, the user is not logged in
+          // Open the login modal.
+          setLoginOpen(true);
+      }
   };
   const handleLoginClose = () => {
     setLoginOpen(false); // Close the modal
@@ -234,6 +293,7 @@ function Home() {
         </header>
       </div>
       <div className="App-feed">
+        <Feed/>
         {rosterLoading && <p>Loading roster...</p>}
         {rosterError && <p className='error'>Error loading roster: {rosterError.message}</p>}
         {rosterData && (

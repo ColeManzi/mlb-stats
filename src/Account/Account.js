@@ -20,7 +20,7 @@ function Account() {
           return;
         }
 
-        const response = await axios.get('http://localhost:5000/users', {
+        const response = await axios.get('http://localhost:5000/api/users', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
@@ -42,6 +42,9 @@ function Account() {
            } else {
             console.error('An error occurred:', error);
             setError('There was an error fetching user data.');
+            localStorage.removeItem('accessToken')
+            localStorage.removeItem('refreshToken')
+            navigate("/");
           }
       }
     };
