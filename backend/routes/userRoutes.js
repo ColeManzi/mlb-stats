@@ -4,6 +4,8 @@ const userController = require('../controllers/userController');
 const authMiddleware = require('../middleware/authMiddleware')
 
 router.get('/users', authMiddleware.authenticateToken, userController.getUser)
-router.put('/users', authMiddleware.authenticateToken, userController.addPlayerId);
-router.delete('/users', authMiddleware.authenticateToken, userController.unAddPlayerId);
+router.put('/users', authMiddleware.authenticateToken, userController.addPlayerId)
+router.delete('/users', authMiddleware.authenticateToken, userController.unAddPlayerId)
+router.get('/users/bigquery', userController.getMostFollowedPlayers)
+
 module.exports = router

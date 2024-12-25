@@ -1,5 +1,7 @@
 const { ObjectId } = require('mongodb');
 const config = require('../config');
+const { runQuery } = require('../utils');
+
 
 const getUser = async (req, res) => {
   const { usersCollection } = config.getDb()
@@ -65,8 +67,37 @@ const unAddPlayerId = async (req, res) => {
     }
 }
 
+const getMostFollowedPlayers = async (req, res) => {
+    try {
+        const sqlQuery = `
+            SELECT
+                player_id,
+                COUNT(*) AS follow_count
+            FROM
+                \`project-sandbox-445319.mlb.content-interaction\`,
+                UNNEST(followed_player_ids) AS player_id
+            GROUP BY
+                player_id
+            ORDER BY
+                follow_count DESC
+            LIMIT 5;
+          `;
+        const queryResults = await runQuery(sqlQuery);
+        console.log(queryResults);
+        if (queryResults) {
+          res.status(200).json({ data: queryResults });
+        } else {
+          res.status(500).json({ error: 'Failed to retrieve user data from BigQuery' });
+        }
+    } catch (error) {
+        console.error('Error retrieving user data from BigQuery:', error);
+        res.status(500).json({ error: 'Failed to retrieve user data from BigQuery' });
+    }
+  };
+
 module.exports = {
     getUser,
     addPlayerId,
-    unAddPlayerId
+    unAddPlayerId,
+    getMostFollowedPlayers
 }

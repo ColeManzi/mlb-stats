@@ -8,8 +8,11 @@ import PersonIcon from '@mui/icons-material/Person';
 //import { Modal, TextField, Button, Box } from '@mui/material';
 import axios from 'axios';
 import Login from '../Login/Login';
-import Feed from '../Feed/Feed';
 import { useNavigate } from 'react-router-dom';
+import BigQueryDataDisplay from './BigQueryDataDisplay';
+import GameStats from './GameStats'
+import CloseIcon from '@mui/icons-material/Close'; // Import Close icon
+
 
 
 function Home() {
@@ -211,6 +214,11 @@ function Home() {
       }
   };
 
+  const noPlayers = !rosterData || rosterData.length === 0;
+  const clearRoster = () => {
+    setRosterData(null);
+  }
+
   const [openLogin, setLoginOpen] = useState(false);
   const handleIconClick = () => {
     const accessToken = localStorage.getItem('accessToken');
@@ -293,45 +301,59 @@ function Home() {
         </header>
       </div>
       <div className="App-feed">
-        <Feed/>
-        {rosterLoading && <p>Loading roster...</p>}
-        {rosterError && <p className='error'>Error loading roster: {rosterError.message}</p>}
-        {rosterData && (
-          <ul>
-            {rosterData.map((player) => (
-              <li 
-                key={player.person.id} 
-                onClick={() => handlePlayerClick(player)}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '8px 0', 
-                }}
-                >
-                <span style={{ marginLeft: `10px `}}>
-                  {player.person.fullName} - {player.position.name}
-                </span>
-                <span onClick={(e) => {
-                  e.stopPropagation(); // Prevent triggering player click when star is clicked
-                  handleStarClick(player.person.id); // Toggle star
-                }}>
-                  {starredPlayers[player.person.id] ? (
-                    <StarIcon style={{ marginRight: '10px', cursor: 'pointer' }} />
-                  ) : (
-                    <StarBorderIcon style={{ marginRight: '10px', cursor: 'pointer' }} />
-                  )}
-                </span>
-              </li>
-            ))}
-          </ul>
+        {/* Conditional rendering based on rosterData presence */}
+        {noPlayers ? (
+          <GameStats />
+        ) : (
+          <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <h2>Player Roster</h2>
+              <button onClick={clearRoster} style={{background: 'none', border: 'none', cursor: 'pointer'}} aria-label='Close Roster'>
+                  <CloseIcon />
+              </button>
+            </div>
+            {rosterLoading && <p>Loading roster...</p>}
+            {rosterError && <p className='error'>Error loading roster: {rosterError.message}</p>}
+            {rosterData && (
+              <ul>
+                {rosterData.map((player) => (
+                  <li
+                    key={player.person.id}
+                    onClick={() => handlePlayerClick(player)}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '8px 0',
+                    }}
+                  >
+                    <span style={{ marginLeft: `10px` }}>
+                      {player.person.fullName} - {player.position.name}
+                    </span>
+                    <span onClick={(e) => {
+                        e.stopPropagation(); // Prevent triggering player click when star is clicked
+                        handleStarClick(player.person.id); // Toggle star
+                      }}>
+                      {starredPlayers[player.person.id] ? (
+                        <StarIcon style={{ marginRight: '10px', cursor: 'pointer' }} />
+                      ) : (
+                        <StarBorderIcon style={{ marginRight: '10px', cursor: 'pointer' }} />
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         )}
       </div>
       <div className="Card-container-left">
         <h1 className='title'>Recent News</h1>
+        <BigQueryDataDisplay/>
       </div>
       <div className="Card-container-right">
         <h1 className='title'>Your Interest</h1>
+        
       </div>
     </div>
   );

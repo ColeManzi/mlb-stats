@@ -3,6 +3,8 @@ const { ObjectId } = require('mongodb')
 const config = require('../config')
 const utils = require('../utils')
 const SECRET_KEY = process.env.SECRET_KEY || 'secret key'
+const { hashPassword } = require('../utils');
+
 
 const login = async (req, res) => {
     const { email, password } = req.body;
@@ -59,23 +61,50 @@ const refreshToken = (req, res) => {
 };
 
 const createUser = async (req, res) => {
+    const { usersCollection } = config.getDb();
+    const { firstName, lastName, email, password } = req.body;
     try {
-        const {usersCollection } = config.getDb()
         if (!usersCollection) {
             return res.status(500).send('usersCollection not initialized.');
         }
-        const {username, email, password } = req.body;
-        const hashedPassword = await utils.hashPassword(password);
+
+        const hashedPassword = await hashPassword(password);
+
         const newUser = {
-            username: username,
-            email: email,
-            password: hashedPassword
-        }
+            firstName,
+            lastName,
+            email,
+            password: hashedPassword,
+            playerIds: [],
+        };
         const result = await usersCollection.insertOne(newUser);
-        res.status(201).json({ message: 'User added!', insertedId: result.insertedId });
-    } catch (err) {
-        console.error("Error adding user:", err);
-         res.status(500).send({message: "Error adding user", error: err.message });
+
+        if (result.insertedId) {
+            // Retrieve the newly created user (with _id)
+            const user = await usersCollection.findOne({ _id: result.insertedId });
+            if (!user) {
+                return res.status(500).json({ message: 'User not found after creation.' });
+            }
+            // Generate tokens with user data
+            const accessToken = jwt.sign({ userId: user._id, username: user.email }, SECRET_KEY, {
+                expiresIn: '15m',
+            });
+            const refreshToken = jwt.sign({ userId: user._id, username: user.email }, SECRET_KEY, {
+                expiresIn: '7d',
+            });
+
+            res.status(201).json({
+                message: 'User added successfully',
+                userId: result.insertedId,
+                accessToken,
+                refreshToken,
+            });
+        } else {
+            res.status(500).json({ message: 'Failed to add user' });
+        }
+    } catch (error) {
+        console.error('Error adding user:', error);
+        res.status(500).json({ message: 'Error adding user', error: error.message });
     }
 };
 
