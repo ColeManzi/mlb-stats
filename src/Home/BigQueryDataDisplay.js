@@ -14,7 +14,7 @@ function BigQueryDataDisplay() {
             setLoading(true);
             setError('');
             try {
-                const response = await axios.get('http://localhost:5000/api/users/bigquery');
+                const response = await axios.get('http://localhost:5000/api/users/bigquery/followed-players');
                 if (response.status === 200) {
                     setData(response.data.data);
                     // fetch player names after initial data is fetched

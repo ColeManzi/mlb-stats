@@ -1,0 +1,90 @@
+.gameListTitle {
+    color: black;
+    text-align: center;
+    margin-bottom: 20px;
+    margin-top: 0px;
+  }
+  
+  .gameList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .gameListItem {
+    background-color: #f9f9f9; 
+    padding: 20px;
+    border-radius: 8px; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    transition: transform 0.3s ease, box-shadow 0.3s ease; 
+  }
+  
+  .gameListItem:hover {
+    transform: translateY(-5px); /* Slight lift on hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+  }
+  
+  .gameSummary {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .teamNames {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #333; /* Dark color for team names */
+  }
+  
+  .awayTeam, .homeTeam {
+    color: #0077cc; /* Color for team names */
+  }
+  
+  .vs {
+    color: #555; /* Lighter color for 'vs' */
+  }
+  
+  .score {
+    font-size: 1.5rem;
+    color: #444;
+    margin: 5px 0;
+  }
+  
+  .awayScore, .homeScore {
+    font-weight: bold;
+  }
+  
+  .summaryText {
+    font-size: 1rem;
+    color: #555; /* Light gray for summary text */
+    margin-top: 5px;
+  }
+  
+  .videoLink {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 15px;
+    background-color: #0077cc; /* Button-like appearance */
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 5px;
+    text-align: center;
+    transition: background-color 0.3s ease;
+  }
+  
+  .videoLink:hover {
+    background-color: #005fa3; /* Darker blue on hover */
+  }
+  
+  .gameSummary {
+    display: flex;
+    align-items: center; /* Aligns items vertically */
+    gap: 5px; /* Adds space between elements */
+  }
+  
+
+  

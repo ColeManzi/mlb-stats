@@ -10,8 +10,9 @@ import axios from 'axios';
 import Login from '../Login/Login';
 import { useNavigate } from 'react-router-dom';
 import BigQueryDataDisplay from './BigQueryDataDisplay';
-import GameStats from './GameStats'
+import GameStats from './GameStats/GameStats'
 import CloseIcon from '@mui/icons-material/Close'; // Import Close icon
+import RelevantNews from './RelevantNews/RelevantNews';
 
 
 
@@ -254,7 +255,7 @@ function Home() {
                   onClick={handleIconClick}
               />
             <Login open={openLogin} handleClose={handleLoginClose} />
-          <h1 className='title'>MLB Stats Tracker</h1>
+          <h1 className='title'>MLB Fan Hub</h1>
           <input
             type="text"
             placeholder="Enter MLB Team Name"
@@ -347,12 +348,16 @@ function Home() {
           </>
         )}
       </div>
-      <div className="Card-container-left">
-        <h1 className='title'>Recent News</h1>
+      <div className="Card-container-left-top">
+        <h1 className='sub-title'>Player News</h1>
         <BigQueryDataDisplay/>
       </div>
+      <div className="Card-container-left-bottom">
+        <h1 className='sub-title'>Trending</h1>
+        <RelevantNews/>
+      </div>
       <div className="Card-container-right">
-        <h1 className='title'>Your Interest</h1>
+        <h1 className='sub-title'>Your Interest</h1>
         
       </div>
     </div>

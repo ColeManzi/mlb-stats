@@ -93,11 +93,66 @@ const getMostFollowedPlayers = async (req, res) => {
         console.error('Error retrieving user data from BigQuery:', error);
         res.status(500).json({ error: 'Failed to retrieve user data from BigQuery' });
     }
-  };
+};
+
+const getMostRelevantNews = async (req, res) => {
+    try {
+        const sqlQuery = `
+            SELECT 
+                slug, 
+                content_type, 
+                content_headline, 
+                COUNT(*) AS num_interactions
+            FROM (
+                SELECT slug, content_type, content_headline
+                FROM \`project-sandbox-445319.mlb.fan-interaction\`
+                
+                UNION ALL
+                
+                SELECT slug, content_type, content_headline
+                FROM \`project-sandbox-445319.mlb.more-fan-interaction\`
+
+                UNION ALL
+
+                SELECT slug, content_type, content_headline
+                FROM \`project-sandbox-445319.mlb.fan-interaction-3\`
+
+                UNION ALL
+
+                SELECT slug, content_type, content_headline
+                FROM \`project-sandbox-445319.mlb.fan-interaction-4\`
+            )
+            WHERE 
+                NOT (
+                    slug = 'c-2523586283' AND
+                    content_type = 'video' AND
+                    content_headline = 'Gameday Video Placement clip'
+                )
+            GROUP BY 
+                slug, 
+                content_type, 
+                content_headline
+            ORDER BY 
+                num_interactions DESC
+            LIMIT 10;
+          `;
+        const queryResults = await runQuery(sqlQuery);
+        console.log(queryResults);
+        if (queryResults) {
+          res.status(200).json({ data: queryResults });
+        } else {
+          res.status(500).json({ error: 'Failed to retrieve Relevant News from BigQuery' });
+        }
+    } catch (error) {
+        console.error('Error retrieving Relevant News from BigQuery:', error);
+        res.status(500).json({ error: 'Failed to retrieve Relevant News from BigQuery' });
+    }
+};
 
 module.exports = {
     getUser,
     addPlayerId,
     unAddPlayerId,
-    getMostFollowedPlayers
+    getMostFollowedPlayers,
+    getMostRelevantNews
 }
