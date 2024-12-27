@@ -26,8 +26,6 @@
     font-family: 'Arial', sans-serif; /* Clean font */
     display: block;
   }
-
-
   
   .newsLink:hover {
     color: #0077cc; /* Blue highlight on hover */
@@ -39,15 +37,10 @@
     padding: 0;
   }
 
-    
-  .newsHeadline:hover {
-    color: navy;
-  }
-
   .newsDescription{
     font-size: 0.9em;
     color: #555;
-    margin-top: 5%;
+    margin-top: 10px;
 }
   
   

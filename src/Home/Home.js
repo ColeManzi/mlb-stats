@@ -9,7 +9,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import axios from 'axios';
 import Login from '../Login/Login';
 import { useNavigate } from 'react-router-dom';
-import BigQueryDataDisplay from './BigQueryDataDisplay';
+import BigQueryDataDisplay from './BigQueryDataDisplay/BigQueryDataDisplay';
 import GameStats from './GameStats/GameStats'
 import CloseIcon from '@mui/icons-material/Close'; // Import Close icon
 import RelevantNews from './RelevantNews/RelevantNews';

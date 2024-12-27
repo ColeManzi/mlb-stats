@@ -40,7 +40,7 @@
   }
   
   .awayTeam, .homeTeam {
-    color: #0077cc; /* Color for team names */
+    color: black; /* Color for team names */
   }
   
   .vs {
@@ -67,7 +67,7 @@
     display: inline-block;
     margin-top: 10px;
     padding: 10px 15px;
-    background-color: #0077cc; /* Button-like appearance */
+    background-color: grey; /* Button-like appearance */
     color: white;
     text-decoration: none;
     font-weight: bold;
@@ -77,7 +77,7 @@
   }
   
   .videoLink:hover {
-    background-color: #005fa3; /* Darker blue on hover */
+    background-color: black; /* Darker blue on hover */
   }
   
   .gameSummary {

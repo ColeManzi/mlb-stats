@@ -1,23 +1,25 @@
 const { BigQuery } = require('@google-cloud/bigquery');
 const path = require('path');
 
-const keyPath = path.join(__dirname, '../config/BLOCKED.json'); // Relative Path to Key File
+const keyPath = path.resolve(__dirname, '../config/project-sandbox-445319-28c933cdbe23.json');
+
 
 const bigqueryClient = new BigQuery({
     keyFilename: keyPath,
 });
 
-async function runQuery(sqlQuery) {
+async function runQuery(sqlQuery, params = {}) { 
     try {
-        const options = {
-            query: sqlQuery,
-        };
+      const options = {
+        query: sqlQuery,
+        params: params 
+    };
         const [job] = await bigqueryClient.createQueryJob(options);
         const [rows] = await job.getQueryResults();
         return rows;
     } catch (error) {
         console.error('Error running query:', error);
-        throw error; 
+        return null; 
     }
 }
 

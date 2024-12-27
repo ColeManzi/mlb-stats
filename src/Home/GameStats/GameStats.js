@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import styles from './GameStats.css'; 
+import './GameStats.css'; 
 
 const GameStats = () => {
   const [gamesData, setGamesData] = useState([]);
@@ -153,7 +153,7 @@ const GameStats = () => {
                         className="videoLink"
                         aria-label={`View last play video for the game between ${gameInfo.awayTeam} and ${gameInfo.homeTeam} on MLB.com`}
                     >
-                        View Last Play Video
+                        View Last Play
                     </a>
                     )}
                 </li>
