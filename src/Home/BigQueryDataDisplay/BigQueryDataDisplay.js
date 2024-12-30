@@ -1,27 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { CircularProgress, Alert } from '@mui/material';
+import { CircularProgress, Alert, Button, Typography, Box } from '@mui/material';
+import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import './BigQueryDataDisplay.css'; // Import the CSS file
+
 
 function BigQueryDataDisplay() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [playerNames, setPlayerNames] = useState({});
-    const cacheKey = 'mostFollowedPlayersData'; // Define the cache key
+    const [newsType, setNewsType] = useState('player'); // 'player' or 'team'
+    const cacheKey = newsType === 'player' ? 'mostFollowedPlayersData' : 'mostFollowedTeamsData';
 
     useEffect(() => {
-        const fetchMostFollowedPlayers = async () => {
+        const fetchData = async () => {
             setLoading(true);
             setError('');
 
-            // Check if cached data exists in sessionStorage
-            const cachedData = sessionStorage.getItem(cacheKey);
+             // Check if cached data exists in sessionStorage
+             const cachedData = sessionStorage.getItem(cacheKey);
             if(cachedData) {
               try {
                 const parsedCache = JSON.parse(cachedData);
                  setData(parsedCache);
-                fetchPlayerNames(parsedCache);
+                 if(newsType === 'player') fetchPlayerNames(parsedCache);
+                 if(newsType === 'team') fetchTeamNames(parsedCache)
+
                 setLoading(false);
                 return;
               } catch (e) {
@@ -29,17 +34,20 @@ function BigQueryDataDisplay() {
                 sessionStorage.removeItem(cacheKey);
                   console.log("Cached data is invalid, fetching new data")
               }
-
             }
-          
 
             try {
-                const response = await axios.get('http://localhost:5000/api/users/bigquery/followed-players');
+                const apiUrl = newsType === 'player'
+                    ? 'http://localhost:5000/api/users/bigquery/followed-players'
+                    : 'http://localhost:5000/api/users/bigquery/followed-teams';
+
+                const response = await axios.get(apiUrl);
                 if (response.status === 200) {
                     setData(response.data.data);
-                     // Store the response data in sessionStorage
-                    sessionStorage.setItem(cacheKey, JSON.stringify(response.data.data));
-                    fetchPlayerNames(response.data.data);
+                     sessionStorage.setItem(cacheKey, JSON.stringify(response.data.data));
+                    if(newsType === 'player') fetchPlayerNames(response.data.data);
+                    if(newsType === 'team') fetchTeamNames(response.data.data)
+
                 } else {
                     setError('Failed to fetch BigQuery data.');
                 }
@@ -54,10 +62,10 @@ function BigQueryDataDisplay() {
                 setLoading(false);
             }
         };
-        fetchMostFollowedPlayers();
-    }, []);
+        fetchData();
+    }, [newsType]);
 
-     const fetchPlayerNames = async (players) => {
+    const fetchPlayerNames = async (players) => {
         try {
             const namePromises = players.map(async (player) => {
                 const playerId = player.player_id;
@@ -88,6 +96,42 @@ function BigQueryDataDisplay() {
         }
     }
 
+    const fetchTeamNames = async (teams) => {
+        try {
+            const namePromises = teams.map(async (team) => {
+               const teamId = team.team_id;
+
+                try {
+                    const response = await axios.get(`https://statsapi.mlb.com/api/v1/teams/${teamId}`);
+                    if(response.data && response.data.teams && response.data.teams[0])
+                    {
+                      const teamName = response.data.teams[0].name;
+                       return { [teamId]: teamName };
+                    }else{
+                       console.log(`Failed to get name of team ${teamId}`);
+                       return { [teamId] : "Name Not Found"}
+                    }
+
+                } catch (err) {
+                   console.error(`Error fetching team name for ${teamId}`, err);
+                   return { [teamId]: "Name Not Found"}
+                }
+            });
+
+            const nameResults = await Promise.all(namePromises);
+
+             const namesObject = nameResults.reduce((acc, curr) => ({...acc, ...curr}), {});
+            setPlayerNames(namesObject);
+
+        } catch (err) {
+            console.error('Error during team name fetching', err)
+            setError('Error during team name fetching');
+        }
+    }
+
+    const handleToggleNewsType = () => {
+        setNewsType(prevType => prevType === 'player' ? 'team' : 'player');
+    };
 
     if (loading) {
         return <CircularProgress />;
@@ -100,8 +144,7 @@ function BigQueryDataDisplay() {
     if (!data) {
         return <p>No data available.</p>;
     }
-
-    const transformContentType = (contentType) => {
+      const transformContentType = (contentType) => {
         if (contentType === "article") {
             return "news";
         } else if (contentType === "video") {
@@ -111,25 +154,47 @@ function BigQueryDataDisplay() {
     }
 
     return (
-        <ul className="newsList">
-            {data.map((row) => (
-                <li key={row.player_id} className="newsItem">
-                    <div className="newsLink">
-                        <a
-                            href={`https://www.mlb.com/${transformContentType(row.content_type)}/${row.most_frequent_slug}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="newsLink"
-                        >
-                            <h3 className="newsHeadline">
-                                {row.content_headline}
-                            </h3>
-                        </a>
-                    </div>
-                   {row.description && <p className="newsDescription">{row.description}</p>}
-                </li>
-            ))}
-        </ul>
+        <div>
+             <Box display="flex" alignItems="center" justifyContent="center" mb={2}>
+                 <Button onClick={handleToggleNewsType}
+                        endIcon={newsType === 'player' ? <KeyboardArrowDown /> : <KeyboardArrowUp />}
+                    >
+                        <Typography variant="h4" className='sub-title' sx={{ fontWeight: 'bold', color: 'black' }}>
+                          {newsType === 'player' ? 'Player News' : 'Team News'}
+                         </Typography>
+                    </Button>
+                </Box>
+            <ul className="newsList">
+                {data.map((row) => (
+                    <li key={newsType === 'player' ? row.player_id : row.team_id} className="newsItem">
+                        {newsType === 'player' && playerNames[row.player_id] && (
+                            <p className="newsPlayerName">
+                             <strong>{playerNames[row.player_id]}:</strong>
+                            </p>
+                         )}
+
+                       {newsType === 'team' && playerNames[row.team_id] && (
+                            <p className="newsPlayerName">
+                             <strong>{playerNames[row.team_id]}:</strong>
+                            </p>
+                        )}
+                        <div className="newsLink">
+                            <a
+                                href={`https://www.mlb.com/${transformContentType(row.content_type)}/${row.most_frequent_slug}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="newsLink"
+                            >
+                                <h3 className="newsHeadline">
+                                    {row.content_headline}
+                                </h3>
+                            </a>
+                        </div>
+                        {row.description && <p className="newsDescription">{row.description}</p>}
+                    </li>
+                ))}
+            </ul>
+        </div>
     );
 }
 

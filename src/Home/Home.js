@@ -349,7 +349,6 @@ function Home() {
         )}
       </div>
       <div className="Card-container-left-top">
-        <h1 className='sub-title'>Player News</h1>
         <BigQueryDataDisplay/>
       </div>
       <div className="Card-container-left-bottom">

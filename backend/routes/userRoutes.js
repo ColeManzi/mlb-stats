@@ -9,6 +9,8 @@ router.delete('/users', authMiddleware.authenticateToken, userController.unAddPl
 
 router.get('/users/bigquery/followed-players', userController.getMostFollowedPlayers);
 router.get('/users/bigquery/relevant-news', userController.getMostRelevantNews);
+router.get('/users/bigquery/followed-teams', userController.getMostFollowedTeams);
+
 
 
 module.exports = router;
