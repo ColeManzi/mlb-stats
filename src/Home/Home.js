@@ -4,7 +4,6 @@ import mlbLogo from '../assets/mlb_logo.png';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import StarIcon from '@mui/icons-material/Star';
 import PersonIcon from '@mui/icons-material/Person';
-//import { useNavigate } from "react-router-dom";
 //import { Modal, TextField, Button, Box } from '@mui/material';
 import axios from 'axios';
 import Login from '../Login/Login';
@@ -17,27 +16,27 @@ import RelevantNews from './RelevantNews/RelevantNews';
 
 
 function Home() {
-    const [teamName, setTeamName] = useState('');
-    const [teams, setTeams] = useState([]);
-    const [selectedTeam, setSelectedTeam] = useState(null);
-    const [rosterData, setRosterData] = useState(null);
-    const [rosterLoading, setRosterLoading] = useState(false);
-    const [rosterError, setRosterError] = useState(null);
+  const [teamName, setTeamName] = useState('');
+  const [teams, setTeams] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [rosterData, setRosterData] = useState(null);
+  const [rosterLoading, setRosterLoading] = useState(false);
+  const [rosterError, setRosterError] = useState(null);
 
-    const [selectedPlayer, setSelectedPlayer] = useState(null);
-    const [playerStats, setPlayerStats] = useState(null);
-    const [statsLoading, setStatsLoading] = useState(false);
-    const [statsError, setStatsError] = useState(null);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [playerStats, setPlayerStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsError, setStatsError] = useState(null);
 
-    const [dropdownVisible, setDropdownVisible] = useState(true); // State to control dropdown visibility
+  const [dropdownVisible, setDropdownVisible] = useState(true); // State to control dropdown visibility
 
-    const [playerSummary, setPlayerSummary] = useState(null);
-    const [summaryLoading, setSummaryLoading] = useState(false);
-    const [summaryError, setSummaryError] = useState(null);
+  const [playerSummary, setPlayerSummary] = useState(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState(null);
 
-    const [starredPlayers, setStarredPlayers] = useState({});
+  const [starredPlayers, setStarredPlayers] = useState({});
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -90,7 +89,8 @@ function Home() {
   const handleTeamClick = (team) => {
       setSelectedTeam(team);
       setTeamName(team.name);
-      setDropdownVisible(false); // Hide the dropdown after selecting a team
+      setDropdownVisible(false); 
+      navigate(`/team/${team.id}/${team.name}`);  
   };
 
   const handlePlayerClick = async (player) => {
@@ -105,71 +105,6 @@ function Home() {
       setTeamName(e.target.value);
       setDropdownVisible(true); // Show the dropdown when input changes
   };
-
-  const handleStarClick = (playerId) => {
-    const accessToken = localStorage.getItem('accessToken');
-    if(!accessToken) {
-      setLoginOpen(true)
-    } else {
-      setStarredPlayers((prevState) => {
-        const isCurrentlyStarred = !!prevState[playerId];
-        if (isCurrentlyStarred) {
-          handleRemovePlayerId(playerId);
-          return {
-            ...prevState,
-            [playerId]: false,
-          };
-        } else {
-          handleAddPlayerId(playerId);
-          return {
-            ...prevState,
-            [playerId]: true,
-          };
-        }
-      });
-    }
-  };
-
-  const handleAddPlayerId = async (playerId) => {
-    try {
-      const accessToken = localStorage.getItem('accessToken')
-      const response = await axios.put('http://localhost:5000/api/users', {
-           playerId: playerId
-         }, {
-            headers: {
-              Authorization: `Bearer ${accessToken}`
-          }
-         });
-      if (response.status === 200) {
-        console.log("Player ID added successfully")
-      } else {
-        console.log("There was an issue adding the Player ID")
-      }
-      } catch (error) {
-        console.error("There was an error adding the player id:", error)
-    }
-  }
-
-  const handleRemovePlayerId = async (playerId) => {
-    try {
-      const accessToken = localStorage.getItem('accessToken')
-      const response = await axios.delete('http://localhost:5000/api/users', {
-            headers: {
-              Authorization: `Bearer ${accessToken}`
-            },
-        data: {
-            playerId: playerId
-        }
-      });
-      if (response.status === 200) {
-        console.log("Player ID removed successfully")
-      } else {
-        console.log("There was an issue removing the Player ID")
-      }
-      } catch (error) {
-        console.error("There was an error removing the player id:", error)
-      }
-  }
 
   const fetchPlayerStats = async (playerId) => {
     setStatsLoading(true);
@@ -254,7 +189,7 @@ function Home() {
                   }} 
                   onClick={handleIconClick}
               />
-            <Login open={openLogin} handleClose={handleLoginClose} />
+          <Login open={openLogin} handleClose={handleLoginClose} />
           <h1 className='title'>MLB Fan Hub</h1>
           <input
             type="text"
@@ -288,7 +223,6 @@ function Home() {
                   <p><strong>Number:</strong> {playerStats.primaryNumber}</p>
                 </div>
               )}
-
               {summaryLoading && <p>Loading summary...</p>}
               {summaryError && <p className='error'>Error loading summary: {summaryError.message}</p>}
               {playerSummary && (
@@ -302,51 +236,7 @@ function Home() {
         </header>
       </div>
       <div className="App-feed">
-        {/* Conditional rendering based on rosterData presence */}
-        {noPlayers ? (
-          <GameStats />
-        ) : (
-          <>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <h2>Player Roster</h2>
-              <button onClick={clearRoster} style={{background: 'none', border: 'none', cursor: 'pointer'}} aria-label='Close Roster'>
-                  <CloseIcon />
-              </button>
-            </div>
-            {rosterLoading && <p>Loading roster...</p>}
-            {rosterError && <p className='error'>Error loading roster: {rosterError.message}</p>}
-            {rosterData && (
-              <ul>
-                {rosterData.map((player) => (
-                  <li
-                    key={player.person.id}
-                    onClick={() => handlePlayerClick(player)}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '8px 0',
-                    }}
-                  >
-                    <span style={{ marginLeft: `10px` }}>
-                      {player.person.fullName} - {player.position.name}
-                    </span>
-                    <span onClick={(e) => {
-                        e.stopPropagation(); // Prevent triggering player click when star is clicked
-                        handleStarClick(player.person.id); // Toggle star
-                      }}>
-                      {starredPlayers[player.person.id] ? (
-                        <StarIcon style={{ marginRight: '10px', cursor: 'pointer' }} />
-                      ) : (
-                        <StarBorderIcon style={{ marginRight: '10px', cursor: 'pointer' }} />
-                      )}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
+        <GameStats />
       </div>
       <div className="Card-container-left-top">
         <BigQueryDataDisplay/>

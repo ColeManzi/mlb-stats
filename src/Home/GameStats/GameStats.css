@@ -23,8 +23,8 @@
   }
   
   .gameListItem:hover {
-    transform: translateY(-5px); /* Slight lift on hover */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   }
   
   .gameSummary {
@@ -36,15 +36,15 @@
   .teamNames {
     font-size: 1.25rem;
     font-weight: bold;
-    color: #333; /* Dark color for team names */
+    color: #333;
   }
   
   .awayTeam, .homeTeam {
-    color: black; /* Color for team names */
+    color: black; 
   }
   
   .vs {
-    color: #555; /* Lighter color for 'vs' */
+    color: #555; 
   }
   
   .score {
@@ -59,7 +59,7 @@
   
   .summaryText {
     font-size: 1rem;
-    color: #555; /* Light gray for summary text */
+    color: #555; 
     margin-top: 5px;
   }
   
@@ -67,7 +67,7 @@
     display: inline-block;
     margin-top: 10px;
     padding: 10px 15px;
-    background-color: grey; /* Button-like appearance */
+    background-color: grey; 
     color: white;
     text-decoration: none;
     font-weight: bold;
@@ -77,13 +77,13 @@
   }
   
   .videoLink:hover {
-    background-color: black; /* Darker blue on hover */
+    background-color: black; 
   }
   
   .gameSummary {
     display: flex;
-    align-items: center; /* Aligns items vertically */
-    gap: 5px; /* Adds space between elements */
+    align-items: center; 
+    gap: 5px; 
   }
   
 

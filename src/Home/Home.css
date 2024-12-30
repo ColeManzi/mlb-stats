@@ -1,9 +1,9 @@
 .App {
   font-family: sans-serif;
   display: flex;
-  flex-direction: column; /* Stack items vertically */
+  flex-direction: column; 
   justify-content: center;
-  align-items: center; /* Center items horizontally within container */
+  align-items: center;
   min-height: 100vh;
   background-color: rgb(4, 4, 88);
   color: white;
@@ -13,9 +13,9 @@
 .Card {
   font-family: sans-serif;
   display: flex;
-  flex-direction: column; /* Stack items vertically */
+  flex-direction: column; 
   justify-content: center;
-  align-items: center; /* Center items horizontally within container */
+  align-items: center; 
   min-height: 100vh;
   background-color: rgb(4, 4, 88);
   color: white;
@@ -23,51 +23,51 @@
 }
 
 .Card-container-left-top {
-  position: fixed; /* Changed to fixed positioning */
+  position: fixed; 
   text-align: center;
   width: 19%; 
   height: 40vh; 
   left: 1%;
-  top: 2%; /* Adjust as needed to position it correctly vertically */
+  top: 2%; 
   background-color: white;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   margin: 10px;
-  z-index: 10; /* Ensures it stays above other content */
-  overflow-y: auto; /* Allow vertical scrolling */
+  z-index: 10; 
+  overflow-y: auto; 
 }
 
 .Card-container-left-bottom {
-  position: fixed; /* Changed to fixed positioning */
+  position: fixed; 
   text-align: center;
   width: 19%; 
   height: 40vh; 
   left: 1%;
-  top: 50%; /* Adjust as needed to position it correctly vertically */
+  top: 50%;
   background-color: white;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   margin: 10px;
-  z-index: 10; /* Ensures it stays above other content */
-  overflow-y: auto; /* Allow vertical scrolling */
+  z-index: 10;
+  overflow-y: auto; 
 
 }
 
 .Card-container-right {
-  position: fixed; /* Changed to fixed positioning */
+  position: fixed; 
   text-align: center;
   width: 19%; 
   height: 90vh; 
   right: 1%;
-  top: 2%; /* Adjust as needed to position it correctly vertically */
+  top: 2%; 
   background-color: white;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   margin: 10px;
-  z-index: 10; /* Ensures it stays above other content */
+  z-index: 10; 
 }
 
 .App-feed {
@@ -79,45 +79,45 @@
   border-radius: 8px;
   text-align: center;
   margin: 0px;
-  overflow-y: auto; /* Allow vertical scrolling */
+  overflow-y: auto;
 
 }
 
 .App-feed ul {
-  list-style: none; /* Remove default bullets */
-  padding: 0; /* Remove default padding */
-  margin: 0; /* Remove default margins */
+  list-style: none; 
+  padding: 0;
+  margin: 0; 
 }
 
 .App-feed ul li {
-  padding: 12px 15px; /* Add vertical and horizontal padding */
-  margin-bottom: 8px; /* Add spacing between items */
-  background-color: #f9f9f9; /* Light gray background */
-  border-radius: 5px; /* Slight rounded corners */
-  border: 1px solid #eee; /* Light border */
-  cursor: pointer; /* Change cursor on hover */
-  transition: background-color 0.2s ease-in-out; /* Smooth hover effect */
-  text-align: left; /* Align text to the left */
+  padding: 12px 15px; 
+  margin-bottom: 8px; 
+  background-color: #f9f9f9; 
+  border-radius: 5px; 
+  border: 1px solid #eee;
+  cursor: pointer; 
+  transition: background-color 0.2s ease-in-out;
+  text-align: left; 
 }
 
 .App-feed ul li:hover {
-  background-color: #f0f0f0; /* Slightly darker on hover */
+  background-color: #f0f0f0; 
 }
 
 .App-feed ul li strong {
-  font-weight: 600; /* Make the player names slightly bolder */
+  font-weight: 600; 
 }
 
 .App-logo {
-   position: relative; /* Relative to the parent */
-   top: 20px; /* Adjust this value to move it closer to the top */
+   position: relative; 
+   top: 20px; 
    left: 0px;
    border-radius: 8px;
-   margin: 0 auto; /* This ensures it's centered horizontally */
+   margin: 0 auto; 
 }
 
 .App-search {
-  position: relative; /* Make this a positioning context for the dropdown */
+  position: relative; 
   top: 0px;
   width: 50%;
   background-color: white;
@@ -129,19 +129,19 @@
 }
 
 .App-search ul {
-  position: absolute; /* Absolute positioning */
+  position: absolute; 
   left: 26%;
-  width: 48%; /* Match width of App-search */
+  width: 48%; 
   background-color: white;
-  border-radius: 0 0 8px 8px; /* Rounded corners only at the bottom */
+  border-radius: 0 0 8px 8px;
   border: 1px solid #ddd;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
-  z-index: 10; /* Ensure it overlaps other elements */
-  max-height: 20vh; /* Limit the height of the dropdown */
-  overflow-y: auto; /* Allow vertical scrolling */
-  padding: 0; /* Remove default list padding */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); 
+  z-index: 10; 
+  max-height: 20vh; 
+  overflow-y: auto; 
+  padding: 0; 
   top: 86%;
-  list-style: none; /* Remove bullet points */
+  list-style: none; 
 }
 
 .App-search ul li {
@@ -150,20 +150,20 @@
 }
 
 .App-search ul li:hover {
-  background-color: #f0f0f0; /* Highlight on hover */
+  background-color: #f0f0f0; 
 }
 
 .sub-title {
   font-size: 2.0em;
   margin-top: 5px;
   margin-bottom: 10px;
-  color: black; /* Title text color */
+  color: black; 
 }
 
 .title {
   font-size: 2.5em;
   margin-bottom: 20px;
-  color: black; /* Title text color */
+  color: black; 
 }
 
 .search-bar {
@@ -207,23 +207,6 @@
   cursor: pointer;
 }
 
-.player-info {
-  display: flex; /* Enables flexbox */
-  justify-content: space-between; /* Distributes space between the child elements */
-  gap: 20px; /* Adds spacing between the two sections */
-}
-
-.player-stats, .player-summary {
-  flex: 1; /* Each section will take equal width */
-  padding: 10px;
-  background-color: #f4f4f4;
-  border-radius: 8px;
-}
-
-.player-summary {
-  margin-left: 20px; /* Adds space between the two sections */
-}
-
 .error {
   color: red;
 }
@@ -232,7 +215,6 @@
   background-color: #888; 
   border-radius: 10px; 
 }
-
 
 ::-webkit-scrollbar-track {
   background-color: #f1f1f1; 
