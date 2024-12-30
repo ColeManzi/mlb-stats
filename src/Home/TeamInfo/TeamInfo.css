@@ -24,12 +24,18 @@
   .background-teaminfo {
     position: relative;
     width: 50%;
-    height: 30vh;
     padding: 10px;
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
+  }
+
+  .team-logo {
+    object-fit: contain;
+    border: 1px solid #ccc;  /* Optional: Adds a border around the image */
+    padding: 5px;            /* Optional: Adds some padding */
+    background-color: #fff;   /* Optional: Adds a background color */
   }
   
   .player-item {

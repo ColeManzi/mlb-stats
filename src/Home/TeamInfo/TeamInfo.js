@@ -5,6 +5,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import './TeamInfo.css'
+import { CenterFocusStrong } from '@mui/icons-material';
 
 const TeamInfo = () => {
     const { teamId, teamName } = useParams();
@@ -115,7 +116,12 @@ const TeamInfo = () => {
     return (
         <div className="background">
             <div className="background-teaminfo">
-                <p>{teamName}</p>
+                <img
+                    src={`/Team-Logos/${teamId}.png`}  
+                    alt={`${teamName} Logo`}
+                    className="team-logo"
+                    style={{ width: '25%', height: 'auto', objectFit: 'contain' }} // Adjust the size as needed
+                    /> 
             </div>
             {rosterLoading && <p>Loading roster...</p>}
             {rosterError && <p className="error">Error loading roster: {rosterError.message}</p>}
