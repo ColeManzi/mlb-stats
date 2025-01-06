@@ -4,8 +4,7 @@ import axios from 'axios';
 import CloseIcon from '@mui/icons-material/Close';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
-import './TeamInfo.css'
-import { CenterFocusStrong } from '@mui/icons-material';
+import './TeamInfo.css';
 
 const TeamInfo = () => {
     const { teamId, teamName } = useParams();
@@ -13,115 +12,187 @@ const TeamInfo = () => {
     const [rosterLoading, setRosterLoading] = useState(false);
     const [rosterError, setRosterError] = useState(null);
     const [starredPlayers, setStarredPlayers] = useState({});
+    const [teamInfo, setTeamInfo] = useState(null);
+    const [teamInfoLoading, setTeamInfoLoading] = useState(false);
+    const [teamInfoError, setTeamInfoError] = useState(null);
     const navigate = useNavigate();
+    const [message, setMessage] = useState(null); // Message state
 
     useEffect(() => {
-        const fetchTeamRoster = async () => {
+         const fetchTeamRoster = async () => {
             if (!teamId) return;
             setRosterLoading(true);
             setRosterError(null);
             setRosterData(null);
-    
             try {
-            const response = await fetch(`https://statsapi.mlb.com/api/v1/teams/${teamId}/roster?season=2024`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const json = await response.json();
-            setRosterData(json.roster);
+                const response = await fetch(`https://statsapi.mlb.com/api/v1/teams/${teamId}/roster?season=2024`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const json = await response.json();
+                setRosterData(json.roster);
             } catch (error) {
-            setRosterError(error);
+                setRosterError(error);
             } finally {
-            setRosterLoading(false);
+                setRosterLoading(false);
             }
         };
-        fetchTeamRoster();
-    }, [teamId]);
+        const fetchTeamInfo = async () => {
+            if (!teamId) return;
+            setTeamInfoLoading(true);
+            setTeamInfoError(null);
+            setTeamInfo(null);
+            try {
+                const response = await fetch(`https://statsapi.mlb.com/api/v1/teams/${teamId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const json = await response.json();
+                setTeamInfo(json);
+            } catch (error) {
+                setTeamInfoError(error);
+            } finally {
+                setTeamInfoLoading(false);
+            }
+        };
 
+       const fetchInitialStarredPlayers = async () => {
+          const accessToken = localStorage.getItem('accessToken');
+          if (accessToken) {
+              try {
+                  const response = await axios.get('http://localhost:5000/api/users/fetch-players', {
+                      headers: {
+                          Authorization: `Bearer ${accessToken}`
+                      }
+                  });
+                  if (response.status === 200 && response.data && response.data.playerIds) {
+                    const initialStarred = response.data.playerIds.reduce((acc, playerId) => {
+                         acc[playerId] = true;
+                         return acc;
+                    }, {});
+                    setStarredPlayers(initialStarred);
+                  } else {
+                      console.log('Could not get users favorite players')
+                  }
+              } catch (error) {
+                  console.error("There was an error getting the users favorite players:", error);
+              }
+          }
+        };
+        fetchTeamRoster();
+        fetchTeamInfo();
+        fetchInitialStarredPlayers();
+    }, [teamId]);
 
     const handlePlayerClick = (player) => {
         console.log('Player clicked:', player);
     };
 
-    const clearRoster = () => {
-        navigate('/teams');
-        window.location.reload();
-    };
-
-    const handleStarClick = (playerId) => {
-        const accessToken = localStorage.getItem('accessToken');
+  const handleStarClick = (playerId) => {
+      const accessToken = localStorage.getItem('accessToken');
         if(!accessToken) {
-            // Do nothing
-        } else {
-          setStarredPlayers((prevState) => {
-            const isCurrentlyStarred = !!prevState[playerId];
-            if (isCurrentlyStarred) {
-              handleRemovePlayerId(playerId);
-              return {
-                ...prevState,
-                [playerId]: false,
-              };
-            } else {
-              handleAddPlayerId(playerId);
-              return {
-                ...prevState,
-                [playerId]: true,
-              };
+           setMessage("You must be logged in to favorite players!");
+            setTimeout(() => setMessage(null), 3000); // Clear message after 3 seconds
+        }
+        else {
+              setStarredPlayers((prevState) => {
+                const isCurrentlyStarred = !!prevState[playerId];
+                if (isCurrentlyStarred) {
+                  handleRemovePlayerId(playerId);
+                    setMessage('Player removed from favorites');
+                    setTimeout(() => setMessage(null), 3000);
+                  return {
+                    ...prevState,
+                    [playerId]: false,
+                  };
+                } else {
+                  handleAddPlayerId(playerId);
+                    setMessage('Player favorited successfully!');
+                  setTimeout(() => setMessage(null), 3000);
+
+                  return {
+                    ...prevState,
+                    [playerId]: true,
+                  };
+                }
+              });
+          }
+      };
+
+  const handleAddPlayerId = async (playerId) => {
+      try {
+        const accessToken = localStorage.getItem('accessToken')
+        const response = await axios.put('http://localhost:5000/api/users', {
+             playerId: playerId
+          }, {
+              headers: {
+                Authorization: `Bearer ${accessToken}`
             }
           });
-        }
-      };
-    
-    const handleAddPlayerId = async (playerId) => {
-        try {
-          const accessToken = localStorage.getItem('accessToken')
-          const response = await axios.put('http://localhost:5000/api/users', {
-               playerId: playerId
-            }, {
-                headers: {
-                  Authorization: `Bearer ${accessToken}`
-              }
-            });
-            if (response.status === 200) {
-                console.log("Player ID added successfully")
-            } else {
-                console.log("There was an issue adding the Player ID")
-            }
-        } catch (error) {
-            console.error("There was an error adding the player id:", error)
-        }
-    }
+          if (response.status === 200) {
+              console.log("Player ID added successfully")
+          } else {
+              console.log("There was an issue adding the Player ID")
+          }
+      } catch (error) {
+          console.error("There was an error adding the player id:", error)
+      }
+  }
 
-    const handleRemovePlayerId = async (playerId) => {
-        try {
-        const accessToken = localStorage.getItem('accessToken')
-        const response = await axios.delete('http://localhost:5000/api/users', {
-                headers: {
-                Authorization: `Bearer ${accessToken}`
-                },
-            data: {
-                playerId: playerId
-            }
-        });
-        if (response.status === 200) {
-            console.log("Player ID removed successfully")
-        } else {
-            console.log("There was an issue removing the Player ID")
-        }
-        } catch (error) {
-            console.error("There was an error removing the player id:", error)
-        }
-    }
+  const handleRemovePlayerId = async (playerId) => {
+      try {
+      const accessToken = localStorage.getItem('accessToken')
+      const response = await axios.delete('http://localhost:5000/api/users', {
+              headers: {
+              Authorization: `Bearer ${accessToken}`
+              },
+          data: {
+              playerId: playerId
+          }
+      });
+      if (response.status === 200) {
+          console.log("Player ID removed successfully")
+      } else {
+          console.log("There was an issue removing the Player ID")
+      }
+      } catch (error) {
+          console.error("There was an error removing the player id:", error)
+      }
+  }
 
     return (
         <div className="background">
-            <div className="background-teaminfo">
-                <img
-                    src={`/Team-Logos/${teamId}.png`}  
-                    alt={`${teamName} Logo`}
-                    className="team-logo"
-                    style={{ width: '25%', height: 'auto', objectFit: 'contain' }} // Adjust the size as needed
-                    /> 
+             {message && (
+                <div className="message-popup">
+                     {message}
+                </div>
+            )}
+            <div className="background-team-title">
+                <h3> {`${teamName}`} </h3>
+            </div>
+            <div className="background-team-container">
+                <div className="background-teamlogo">
+                    <img
+                        src={`/Team-Logos/${teamId}.png`}
+                        alt={`${teamName} Logo`}
+                        className="team-logo"
+                    />
+                </div>
+                <div className="background-teaminfo">
+                    {teamInfoLoading && <p>Loading team info...</p>}
+                    {teamInfoError && (
+                        <p className="error">Error loading team info: {teamInfoError.message}</p>
+                    )}
+                     {teamInfo && (
+                        <>
+                            <p><strong>Location:</strong> {teamInfo.teams[0].locationName}</p>
+                            <p><strong>First Year:</strong> {teamInfo.teams[0].firstYearOfPlay}</p>
+                            <p><strong>League:</strong> {teamInfo.teams[0].league.name}</p>
+                            <p><strong>Division:</strong> {teamInfo.teams[0].division.name}</p>
+                            <p><strong>Venue:</strong> {teamInfo.teams[0].venue.name}</p>
+                        </>
+                    )}
+                </div>
             </div>
             {rosterLoading && <p>Loading roster...</p>}
             {rosterError && <p className="error">Error loading roster: {rosterError.message}</p>}
@@ -154,6 +225,12 @@ const TeamInfo = () => {
                 ))}
                 </ul>
             )}
+        <div className="background-recent-games">
+            <h3 className="sub-title"> Recent Games</h3>
+        </div>
+        <div className="background-team-news">
+            <h3 className="sub-title"> Team News</h3>
+        </div>
         </div>
     );
 };

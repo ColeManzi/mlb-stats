@@ -72,6 +72,27 @@ const unAddPlayerId = async (req, res) => {
     }
 }
 
+const getFavoritedPlayers = async (req, res) => {
+    const { usersCollection } = config.getDb();
+    try {
+      if(!usersCollection){
+        return res.status(500).send('usersCollection not initialized.');
+      }
+ 
+       const user = await usersCollection.findOne({ _id: new ObjectId(req.user.userId) });
+ 
+       if(!user) {
+            console.log(req.user.id);
+           return res.status(404).json({ message: "User not found"});
+       }
+      
+       res.status(200).json({ playerIds: user.playerIds });
+    } catch (error) {
+       console.error("Error fetching player IDs", error);
+       res.status(500).json({ message: 'Error fetching player IDs', error: error.message });
+   }
+}
+
 const getMostFollowedPlayers = async (req, res) => {
     try {
         const sqlQuery = `
@@ -326,5 +347,6 @@ module.exports = {
     unAddPlayerId,
     getMostFollowedPlayers,
     getMostRelevantNews,
-    getMostFollowedTeams
+    getMostFollowedTeams,
+    getFavoritedPlayers
 }

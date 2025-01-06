@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import './Home.css';
 import mlbLogo from '../assets/mlb_logo.png';
-import StarBorderIcon from '@mui/icons-material/StarBorder';
-import StarIcon from '@mui/icons-material/Star';
 import PersonIcon from '@mui/icons-material/Person';
 //import { Modal, TextField, Button, Box } from '@mui/material';
-import axios from 'axios';
 import Login from '../Login/Login';
 import { useNavigate } from 'react-router-dom';
 import BigQueryDataDisplay from './BigQueryDataDisplay/BigQueryDataDisplay';
 import GameStats from './GameStats/GameStats'
-import CloseIcon from '@mui/icons-material/Close'; // Import Close icon
 import RelevantNews from './RelevantNews/RelevantNews';
 
 
@@ -131,29 +127,6 @@ function Home() {
       setStatsLoading(false);
     }
   };
-
-  const { GoogleGenerativeAI } = require("@google/generative-ai"); // Import the GoogleGenerativeAI class
-  const fetchPlayerSummary = async (playerName) => {
-      const apiKey = process.env.REACT_APP_API_KEY; // Replace with your actual API key
-      const genAI = new GoogleGenerativeAI(apiKey);// Initialize the GoogleGenerativeAI client with the API key
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-      const prompt = `Tell me a little about the baseball player ${playerName}. Include their latest performance. 2-3 sentences max.`;
-      try {
-          const result = await model.generateContent(prompt);
-          const playerSummary = result.response.text(); // Assuming this is how the result is structured
-          setPlayerSummary(playerSummary);// Handle the summary text, e.g., setting the state or doing other operations
-      } catch (error) {
-          setSummaryError(error); // Set error state if something goes wrong
-          console.error("Error fetching player summary:", error);
-      } finally {
-          setSummaryLoading(false); // Stop loading indicator or similar
-      }
-  };
-
-  const noPlayers = !rosterData || rosterData.length === 0;
-  const clearRoster = () => {
-    setRosterData(null);
-  }
 
   const [openLogin, setLoginOpen] = useState(false);
   const handleIconClick = () => {

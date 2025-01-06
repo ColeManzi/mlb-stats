@@ -2,7 +2,6 @@
   font-family: sans-serif;
   display: flex;
   flex-direction: column; 
-  justify-content: center;
   align-items: center;
   min-height: 100vh;
   background-color: rgb(4, 4, 88);
@@ -10,17 +9,6 @@
   position: relative;
 }
 
-.Card {
-  font-family: sans-serif;
-  display: flex;
-  flex-direction: column; 
-  justify-content: center;
-  align-items: center; 
-  min-height: 100vh;
-  background-color: rgb(4, 4, 88);
-  color: white;
-  position: relative;
-}
 
 .Card-container-left-top {
   position: fixed; 
@@ -71,7 +59,6 @@
 }
 
 .App-feed {
-  top: 20px;
   width: 50%;
   height: 50vh;
   background-color: white;
@@ -79,8 +66,8 @@
   border-radius: 8px;
   text-align: center;
   margin: 0px;
+  margin-top: 1%;
   overflow-y: auto;
-
 }
 
 .App-feed ul {
@@ -126,6 +113,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
   margin: 10px auto;
+  margin-top: 2%;
 }
 
 .App-search ul {
