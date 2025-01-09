@@ -1,0 +1,86 @@
+.games-container-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.games-header {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 10px;
+}
+
+.games-list {
+  height: 85%;
+  overflow-y: auto;
+}
+
+.games-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; 
+}
+
+.game-card {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  position: relative;
+  background-color: #f1f1f1;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  margin: 1px 0;
+  background-color: white;
+}
+
+.team-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.team-logo {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.team-score {
+  font-weight: bold;
+  font-size: 14px;
+  margin-right: 10%;
+}
+
+.game-result {
+  font-weight: bold;
+  font-size: 14px;
+  position: absolute;
+  right: 10px;
+  top: 45%;
+  transform: translateY(-50%);
+  color: black;
+}
+
+.win {
+  color: green;
+}
+
+.loss {
+  color: red;
+}
+
+.tie {
+  color: grey;
+}
+
+.game-type-selector, .game-year-selector {
+  text-align: left;
+}
+
+select {
+  padding: 5px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}

@@ -6,6 +6,7 @@ import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import './TeamInfo.css';
 import TeamSpecificNews from './TeamSpecificNews/TeamSpecificNews';
+import Games from './Games/Games'
 
 const TeamInfo = () => {
     const { teamId, teamName } = useParams();
@@ -161,6 +162,10 @@ const TeamInfo = () => {
       }
   }
 
+  if (!teamInfo || !teamInfo.teams || teamInfo.teams.length === 0) {
+    return <div>Loading team information...</div>; 
+  }
+
     return (
         <div className="background">
              {message && (
@@ -228,6 +233,7 @@ const TeamInfo = () => {
             )}
         <div className="background-recent-games">
             <h3 className="sub-title"> Recent Games</h3>
+            <Games firstYearOfPlay={teamInfo.teams[0].firstYearOfPlay}/>
         </div>
         <div className="background-team-news">
             <h3 className="sub-title"> Team News</h3>

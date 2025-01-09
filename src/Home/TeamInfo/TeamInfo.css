@@ -23,7 +23,7 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   margin: 10px;
   z-index: 10; 
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 .background-team-news {
