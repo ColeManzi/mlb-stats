@@ -340,6 +340,70 @@ const getMostRelevantNews = async (req, res) => {
     }
 };
 
+const getTeamSpecificNews = async (req, res) => {
+    const { teamId } = req.params; // Assuming teamId is passed in the URL params (e.g., /news/123)
+
+    if (!teamId) {
+        return res.status(400).json({ error: 'teamId is required in the request parameters.' });
+    }
+
+
+    try {
+        const sqlQuery = `
+            SELECT 
+                slug, 
+                content_type, 
+                content_headline,
+                COUNT(*) AS num_interactions
+            FROM 
+                \`project-sandbox-445319.mlb.all-fan-interaction\`
+            WHERE 
+                @teamIdParam IN UNNEST(team_ids)
+                AND NOT (
+                    slug = 'c-2523586283' AND
+                    content_type = 'video' AND
+                    content_headline = 'Gameday Video Placement clip'
+                )
+            GROUP BY 
+                slug, 
+                content_type, 
+                content_headline
+            ORDER BY 
+                num_interactions DESC
+            LIMIT 15;
+          `;
+
+
+        const queryResults = await runQuery(sqlQuery, { teamIdParam: teamId }); // Passing teamId as parameter to big query,
+       
+        if (!queryResults) {
+            return res.status(500).json({ error: 'Failed to retrieve team-specific news from BigQuery' });
+        }
+        
+         const resultsWithDescriptions = await Promise.all(queryResults.map(async (item) => {
+             try {
+                const description = await generateDescription(item.content_headline);
+                return {
+                  ...item,
+                  description,
+                };
+              } catch (error) {
+                console.error(`Error generating description for ${item.content_headline}:`, error);
+                return {
+                  ...item,
+                  description: 'Failed to generate description',
+                };
+              }
+            }));
+
+
+
+        res.status(200).json({ data: resultsWithDescriptions });
+    } catch (error) {
+        console.error('Error retrieving team-specific news from BigQuery:', error);
+        res.status(500).json({ error: 'Failed to retrieve team-specific news from BigQuery' });
+    }
+};
 
 module.exports = {
     getUser,
@@ -348,5 +412,6 @@ module.exports = {
     getMostFollowedPlayers,
     getMostRelevantNews,
     getMostFollowedTeams,
-    getFavoritedPlayers
+    getFavoritedPlayers,
+    getTeamSpecificNews
 }

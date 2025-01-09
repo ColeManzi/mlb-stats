@@ -5,6 +5,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import './TeamInfo.css';
+import TeamSpecificNews from './TeamSpecificNews/TeamSpecificNews';
 
 const TeamInfo = () => {
     const { teamId, teamName } = useParams();
@@ -230,6 +231,7 @@ const TeamInfo = () => {
         </div>
         <div className="background-team-news">
             <h3 className="sub-title"> Team News</h3>
+            <TeamSpecificNews/>
         </div>
         </div>
     );
