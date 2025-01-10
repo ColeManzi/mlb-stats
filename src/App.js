@@ -3,6 +3,7 @@ import Account from './Account/Account.js';
 import './App.css';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import TeamInfo from './Home/TeamInfo/TeamInfo';
+import PlayerInfo from './Home/TeamInfo/PlayerInfo/PlayerInfo'
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
             <Route path="/" element={<Home/>} />
             <Route path="/account" element={<Account />} />
             <Route path="/team/:teamId/:teamName" element={<TeamInfo />} />
+            <Route path="/team/:teamId/:teamName/:playerId/:playerName" element={<PlayerInfo />} />
         </Routes>         
     </Router>
   );

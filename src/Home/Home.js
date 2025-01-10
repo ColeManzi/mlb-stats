@@ -220,7 +220,6 @@ function Home() {
       </div>
       <div className="Card-container-right">
         <h1 className='sub-title'>Your Interest</h1>
-        
       </div>
     </div>
   );

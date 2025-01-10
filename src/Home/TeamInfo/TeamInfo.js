@@ -86,8 +86,8 @@ const TeamInfo = () => {
         fetchInitialStarredPlayers();
     }, [teamId]);
 
-    const handlePlayerClick = (player) => {
-        console.log('Player clicked:', player);
+    const handlePlayerClick = (playerId, playerName) => {
+        navigate(`${playerId}/${playerName}`);  
     };
 
   const handleStarClick = (playerId) => {
@@ -209,7 +209,7 @@ const TeamInfo = () => {
                     <li
                     key={player.person.id}
                     className="player-item"
-                    onClick={() => handlePlayerClick(player)}
+                    onClick={() => handlePlayerClick(player.person.id, player.person.fullName)}
                     >
                     <span>
                         {player.person.fullName} - {player.position.name}
