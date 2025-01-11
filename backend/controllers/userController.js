@@ -405,6 +405,70 @@ const getTeamSpecificNews = async (req, res) => {
     }
 };
 
+const getPlayerNews = async (req, res) => {
+    const { playerId } = req.params;
+
+    if (!playerId) {
+        return res.status(400).json({ error: 'Player ID is required in the request parameters.' });
+    }
+
+    const playerIdInt = parseInt(playerId, 10);
+
+    try {
+        const sqlQuery = `
+            SELECT 
+                slug, 
+                content_type, 
+                content_headline, 
+                COUNT(*) AS num_interactions
+            FROM 
+                \`project-sandbox-445319.mlb.all-fan-interaction\`,
+                UNNEST(player_tags) AS playerId
+            WHERE 
+                playerId = @playerIdParam
+            GROUP BY 
+                slug, 
+                content_type, 
+                content_headline
+            ORDER BY 
+                num_interactions DESC
+            LIMIT 15;
+          `;
+    
+        const queryResults = await runQuery(sqlQuery, { playerIdParam: playerIdInt });
+
+        if (!queryResults || queryResults.length === 0) {
+           return res.status(404).json({ message: `No news found for player ${playerId}` });
+        }
+         
+        const resultsWithDescriptions = await Promise.all(queryResults.map(async (item) => {
+            try {
+                const description = await generateDescription(item.content_headline);
+                 const link = `https://www.mlb.com/${item.content_type}/${item.slug}`
+                 return {
+                     title: item.content_headline,
+                     description,
+                     link
+                };
+                } catch (error) {
+                   console.error(`Error in getPlayerNews, generating description for ${item.content_headline}:`, error);
+                   return {
+                     title: item.content_headline,
+                     description: 'Failed to generate description',
+                        link: `https://www.mlb.com/${item.content_type}/${item.slug}`
+                    };
+                }
+           }));
+
+
+
+        res.status(200).json({ data: resultsWithDescriptions });
+    } catch (error) {
+        console.error('Error in getPlayerNews, retrieving player-specific news from BigQuery:', error);
+        res.status(500).json({ error: 'Failed to retrieve player-specific news from BigQuery' });
+    }
+};
+
 module.exports = {
     getUser,
     addPlayerId,
@@ -413,5 +477,6 @@ module.exports = {
     getMostRelevantNews,
     getMostFollowedTeams,
     getFavoritedPlayers,
-    getTeamSpecificNews
+    getTeamSpecificNews,
+    getPlayerNews
 }

@@ -12,5 +12,6 @@ router.get('/users/bigquery/followed-players', userController.getMostFollowedPla
 router.get('/users/bigquery/relevant-news', userController.getMostRelevantNews);
 router.get('/users/bigquery/followed-teams', userController.getMostFollowedTeams);
 router.get('/users/bigquery/team-news/:teamId', userController.getTeamSpecificNews);
+router.get('/users/bigquery/player-news/:playerId', userController.getPlayerNews);
 
 module.exports = router;

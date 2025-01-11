@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import CloseIcon from '@mui/icons-material/Close';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import './TeamInfo.css';
@@ -100,7 +99,7 @@ const TeamInfo = () => {
               setStarredPlayers((prevState) => {
                 const isCurrentlyStarred = !!prevState[playerId];
                 if (isCurrentlyStarred) {
-                  handleRemovePlayerId(playerId);
+                    handleRemovePlayerId(playerId);
                     setMessage('Player removed from favorites');
                     setTimeout(() => setMessage(null), 3000);
                   return {
@@ -108,9 +107,9 @@ const TeamInfo = () => {
                     [playerId]: false,
                   };
                 } else {
-                  handleAddPlayerId(playerId);
+                    handleAddPlayerId(playerId);
                     setMessage('Player favorited successfully!');
-                  setTimeout(() => setMessage(null), 3000);
+                    setTimeout(() => setMessage(null), 3000);
 
                   return {
                     ...prevState,
