@@ -7,6 +7,7 @@ router.get('/users', authMiddleware.authenticateToken, userController.getUser);
 router.put('/users', authMiddleware.authenticateToken, userController.addPlayerId);
 router.delete('/users', authMiddleware.authenticateToken, userController.unAddPlayerId);
 router.get('/users/fetch-players', authMiddleware.authenticateToken, userController.getFavoritedPlayers);
+router.put('/users/add-favorites', authMiddleware.authenticateToken, userController.addPlayerFavorites);
 
 router.get('/users/bigquery/followed-players', userController.getMostFollowedPlayers);
 router.get('/users/bigquery/relevant-news', userController.getMostRelevantNews);

@@ -13,7 +13,7 @@
 .Card-container-left-top {
   position: fixed; 
   text-align: center;
-  width: 19%; 
+  width: 24%; 
   height: 40vh; 
   left: 1%;
   top: 2%; 
@@ -29,7 +29,7 @@
 .Card-container-left-bottom {
   position: fixed; 
   text-align: center;
-  width: 19%; 
+  width: 24%; 
   height: 40vh; 
   left: 1%;
   top: 50%;
@@ -46,7 +46,7 @@
 .Card-container-right {
   position: fixed; 
   text-align: center;
-  width: 19%; 
+  width: 24%; 
   height: 90vh; 
   right: 1%;
   top: 2%; 
@@ -59,7 +59,7 @@
 }
 
 .App-feed {
-  width: 50%;
+  width: 40%;
   height: 50vh;
   background-color: white;
   padding: 20px;
@@ -106,7 +106,7 @@
 .App-search {
   position: relative; 
   top: 0px;
-  width: 50%;
+  width: 40%;
   background-color: white;
   padding: 20px;
   border-radius: 8px;
@@ -154,7 +154,7 @@
   color: black; 
 }
 
-.search-bar {
+.search-bar-home {
   margin-bottom: 10px;
   padding: 12px;
   border: 1px solid #ccc;

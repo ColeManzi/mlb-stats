@@ -169,7 +169,7 @@ function Home() {
             placeholder="Enter MLB Team Name"
             value={teamName}
             onChange={handleInputChange}
-            className='search-bar'
+            className='search-bar-home'
           />
           {dropdownVisible && teams.length > 0 && (
             <ul>
@@ -219,7 +219,7 @@ function Home() {
         <RelevantNews/>
       </div>
       <div className="Card-container-right">
-        <h1 className='sub-title'>Your Interest</h1>
+        <h1 className='sub-title'>Daily Digest</h1>
       </div>
     </div>
   );

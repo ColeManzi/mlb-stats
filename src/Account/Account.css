@@ -1,27 +1,44 @@
 .account-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    text-align: center;
-  }
-  
-  .user-info {
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 20px;
-    width: fit-content;
-    text-align: left; /* Override the container's center alignment */
-    margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.user-info {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.favorites-container {
+  width: 100%;
+  max-width: 600px; /* Limit width */
+  margin-top: 20px;
+    margin-bottom: 20px;
+  padding: 15px;
     background-color: #f9f9f9;
-  }
-  
-  .user-info p {
-    margin: 5px 0;
-    font-size: 1.1rem;
-  }
-  
-  .user-info strong {
-    font-weight: bold;
-    margin-right: 5px;
-  }
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.favorites-container h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.favorites-list {
+    padding-left: 20px; /* indent list items */
+}
+
+.favorites-list li {
+  margin-bottom: 5px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}

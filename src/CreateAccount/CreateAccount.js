@@ -41,7 +41,8 @@ function CreateAccount({ open, handleClose }) {
             localStorage.setItem('accessToken', accessToken);
             localStorage.setItem('refreshToken', refreshToken);
             handleClose();
-            navigate('/account');
+            //navigate('/account');
+            navigate('/selectFavorites');
         }
     } catch (err) {
         console.error('Error creating user', err);

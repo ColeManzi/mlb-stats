@@ -93,6 +93,27 @@ const getFavoritedPlayers = async (req, res) => {
    }
 }
 
+const getFavoritedTeams = async (req, res) => {
+    const { usersCollection } = config.getDb();
+    try {
+        if (!usersCollection) {
+            return res.status(500).send('usersCollection not initialized.');
+        }
+
+        const user = await usersCollection.findOne({ _id: new ObjectId(req.user._id) });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({ teamIds: user.teamIds });
+
+    } catch (error) {
+        console.error("Error fetching team IDs", error);
+        res.status(500).json({ message: 'Error fetching team IDs', error: error.message });
+    }
+};
+
 const getMostFollowedPlayers = async (req, res) => {
     try {
         const sqlQuery = `
@@ -469,6 +490,44 @@ const getPlayerNews = async (req, res) => {
     }
 };
 
+
+const addPlayerFavorites = async (req, res) => {
+    const { favoriteTeams, favoritePlayers } = req.body;
+    const { usersCollection } = config.getDb();
+
+    if (!Array.isArray(favoriteTeams) || !Array.isArray(favoritePlayers)) {
+        return res.status(400).json({ message: 'favoriteTeams and favoritePlayers must be arrays' });
+    }
+
+    try {
+        if (!usersCollection) {
+            return res.status(500).send('usersCollection not initialized.');
+        }
+
+        const updatedUser = await usersCollection.findOneAndUpdate(
+            { _id: new ObjectId(req.user.userId) },
+            {
+                $set: {
+                    playerIds: favoritePlayers,
+                    teamIds: favoriteTeams,
+                },
+            },
+            { returnDocument: 'after'} 
+        );
+
+        if (!updatedUser) {
+            console.log(req.user.userId);
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({ message: 'Favorites updated successfully', user: updatedUser });
+
+    } catch (error) {
+        console.error('Error updating favorites:', error);
+        res.status(500).json({ message: 'Error updating favorites', error: error.message });
+    }
+};
+
 module.exports = {
     getUser,
     addPlayerId,
@@ -478,5 +537,7 @@ module.exports = {
     getMostFollowedTeams,
     getFavoritedPlayers,
     getTeamSpecificNews,
-    getPlayerNews
+    getPlayerNews,
+    addPlayerFavorites,
+    getFavoritedTeams
 }

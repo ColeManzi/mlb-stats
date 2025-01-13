@@ -204,34 +204,34 @@ const TeamInfo = () => {
 
             {rosterData && (
                 <ul className="background-container-players">
-                {rosterData.map((player) => (
-                    <li
-                    key={player.person.id}
-                    className="player-item"
-                    onClick={() => handlePlayerClick(player.person.id, player.person.fullName)}
-                    >
-                    <span>
-                        {player.person.fullName} - {player.position.name}
-                    </span>
-                    <span
-                        className="star-icon"
-                        onClick={(e) => {
-                        e.stopPropagation();
-                        handleStarClick(player.person.id);
-                        }}
-                    >
-                        {starredPlayers[player.person.id] ? (
-                        <StarIcon className="star-icon" />
-                        ) : (
-                        <StarBorderIcon className="star-icon" />
-                        )}
-                    </span>
-                    </li>
-                ))}
+                    {rosterData.map((player) => (
+                        <li
+                        key={player.person.id}
+                        className="player-item"
+                        onClick={() => handlePlayerClick(player.person.id, player.person.fullName)}
+                        >
+                        <span>
+                            {player.person.fullName} - {player.position.name}
+                        </span>
+                        <span
+                            className="star-icon"
+                            onClick={(e) => {
+                            e.stopPropagation();
+                            handleStarClick(player.person.id);
+                            }}
+                        >
+                            {starredPlayers[player.person.id] ? (
+                            <StarIcon className="star-icon" />
+                            ) : (
+                            <StarBorderIcon className="star-icon" />
+                            )}
+                        </span>
+                        </li>
+                    ))}
                 </ul>
             )}
         <div className="background-recent-games">
-            <h3 className="sub-title"> Recent Games</h3>
+            <h3 className="sub-title"> Previous Games</h3>
             <Games firstYearOfPlay={teamInfo.teams[0].firstYearOfPlay}/>
         </div>
         <div className="background-team-news">

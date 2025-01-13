@@ -267,9 +267,11 @@ const PlayerInfo = () => {
                             <div className="player-stat">
                                 <strong>Number:</strong> {playerBackground.primaryNumber}
                             </div>
-                            <div className="player-stat">
-                                <strong>Draft Year:</strong> {playerBackground.draftYear}
-                            </div>
+                            {playerBackground.draftYear && (
+                                <div className="player-stat">
+                                    <strong>Draft Year:</strong> {playerBackground.draftYear}
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -302,7 +304,7 @@ const PlayerInfo = () => {
                     )}
                 </div>
             </div>
-            <div className='background-team-news'>
+            <div className='background-player-news'>
                 <h3 className='sub-title'>Trending Player News</h3>
                 {loading && <p>Loading News...</p>}
                 {error && <p>{error}</p>}
