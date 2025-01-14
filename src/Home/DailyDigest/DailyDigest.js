@@ -6,86 +6,120 @@ function DailyDigest() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [favorites, setFavoriteNames] = useState([]);
-    const accessToken = localStorage.getItem('accessToken'); // Get accessToken from local storage
-    const isLoggedIn = !!accessToken; // Check for accessToken
+    const accessToken = localStorage.getItem('accessToken'); 
+    const isLoggedIn = !!accessToken; 
 
     useEffect(() => {
         async function fetchAndSetFavoritesAndVideos() {
-          if (!isLoggedIn) {
-              setLoading(false);
-              return;
-          }
-        setLoading(true);
+            if (!isLoggedIn) {
+                setLoading(false);
+                return;
+            }
+    
+            setLoading(true);
             setError(null);
             let allNames = []; 
+    
             try {
-                const headers = {
-                    Authorization: `Bearer ${accessToken}`,
-                };
+                const headers = { Authorization: `Bearer ${accessToken}` };
                 const [teamIdsResponse, playerIdsResponse] = await Promise.allSettled([
                     fetch("http://localhost:5000/api/users/fetch-teams", { headers }),
                     fetch("http://localhost:5000/api/users/fetch-players", { headers }),
                 ]);
-
-                const teamIds = teamIdsResponse.status === 'fulfilled' ? await teamIdsResponse.value.json() : [];
-                const playerIds = playerIdsResponse.status === 'fulfilled' ?  await playerIdsResponse.value.json() : [];
-                if (teamIds.length === 0 && playerIds.length === 0 ) {
-                    setLoading(false)
-                    return; 
+    
+                let teamIds = [];
+                let playerIds = [];
+    
+                // Handle team IDs response
+                if (teamIdsResponse.status === 'fulfilled') {
+                    const teamIdsData = await teamIdsResponse.value.json();
+                    teamIds = teamIdsData.teamIds; // Extract the playerIds array
+                    console.log('Fetched teamIds:', teamIds); // Log the result
+                    if (!Array.isArray(teamIds)) {
+                        console.error('teamIds is not an array:', teamIds);
+                        teamIds = [];
+                    }
+                } else {
+                    console.error('Failed to fetch team IDs', teamIdsResponse.reason);
                 }
-                if (teamIds.length === 0 && playerIds.length === 0 ) {
+    
+                // Handle player IDs response
+                if (playerIdsResponse.status === 'fulfilled') {
+                    const playerIdsData = await playerIdsResponse.value.json();
+                    playerIds = playerIdsData.playerIds; 
+                    console.log('Fetched playerIds:', playerIds); 
+                    if (!Array.isArray(playerIds)) {
+                        console.error('playerIds is not an array:', playerIds);
+                        playerIds = [];
+                    }
+                } else {
+                    console.error('Failed to fetch player IDs', playerIdsResponse.reason);
+                }
+    
+                if (teamIds.length === 0 && playerIds.length === 0) {
+                    setLoading(false);
                     return;
                 }
-
-                console.log("made it here");
-
-                const teamNamePromises = teamIds && teamIds.length > 0 ? teamIds.map(async (teamId) => {
+    
+                // Fetch team names
+                const teamNamePromises = teamIds.map(async (teamId) => {
                     const teamResponse = await fetch(`https://statsapi.mlb.com/api/v1/teams/${teamId}`);
                     if (!teamResponse.ok) {
-                        console.log(`failed to fetch team name for id ${teamId}`);
+                        console.log(`Failed to fetch team name for id ${teamId}`);
                         throw new Error(`Failed to fetch team name for id ${teamId}`);
                     }
                     const teamData = await teamResponse.json();
-                    console.log(teamData);
-                    return teamData.teams.name;
-                }) : [];
-                
-                const playerNamePromises = playerIds && playerIds.length > 0 ? playerIds.map(async (playerId) => {
+                    return teamData.teams[0].name;
+                });
+    
+                // Fetch player names
+                const playerNamePromises = playerIds.map(async (playerId) => {
                     const playerResponse = await fetch(`https://statsapi.mlb.com/api/v1/people/${playerId}`);
                     if (!playerResponse.ok) {
-                        console.log(`failed to fetch player name for id ${playerId}`);
+                        console.log(`Failed to fetch player name for id ${playerId}`);
                         throw new Error(`Failed to fetch player name for id ${playerId}`);
                     }
                     const playerData = await playerResponse.json();
-                    return playerData.people.fullName
-                }) : [];
-
-                const allNames = await Promise.all([...teamNamePromises, ...playerNamePromises]);
-                setFavoriteNames(allNames);
-                if (allNames && allNames.length > 0){
-                    const response = await fetch(`http://localhost:5000/api/users/fetch-youtube-videos`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ playerNames: allNames }),
-                    });
-
-                    if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const fetchedVideos = await response.json();
-                    setVideos(fetchedVideos);
+                    return playerData.people[0].fullName;
+                });
+    
+                allNames = await Promise.all([...teamNamePromises, ...playerNamePromises]);
+    
+                if (allNames.length > 0) {
+                    setFavoriteNames(allNames);
                 }
-
-          } catch (err) {
-            setError(err.message)
-          } finally {
-            setLoading(false);
+    
+                if (allNames.length > 0) {
+                    const response = await fetch(`htttp://localhost:5000/api/users/fetch-youtube-videos`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ playerNames: allNames }),
+                    });
+    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+    
+                    const fetchedVideos = await response.json();
+                    if (fetchedVideos && fetchedVideos.length > 0) {
+                        setVideos(fetchedVideos);
+                    }
+                }
+    
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
         }
-    }
-     fetchAndSetFavoritesAndVideos();
+    
+        fetchAndSetFavoritesAndVideos();
     }, [isLoggedIn]);
+    
+    
+    
 
 
     function renderVideos() {
@@ -100,6 +134,7 @@ function DailyDigest() {
             return <p>Log in and favorite teams/players to get daily digests.</p>;
         }
         if (videos.length === 0 && favorites.length > 0) {
+            console.log(favorites);
             return <p>No videos found for your favorite teams or players.</p>;
         }
         if (favorites.length === 0) {

@@ -144,6 +144,8 @@ const getMostFollowedPlayers = async (req, res) => {
                     \`project-sandbox-445319.mlb.all-fan-interaction\` afi
                 CROSS JOIN Top5Players p
                 WHERE p.player_id IN UNNEST(afi.player_tags)
+                AND afi.content_type = 'article'
+
             ),
                 SlugCounts AS (
                 SELECT
@@ -219,9 +221,9 @@ const getMostFollowedTeams = async (req, res) => {
                     COUNT(*) DESC
             ),
             Top5Teams AS (
-            SELECT team_id, team_rank
-            FROM MostFollowedTeams
-            WHERE team_rank <= 20
+                SELECT team_id, team_rank
+                FROM MostFollowedTeams
+                WHERE team_rank <= 20
             ),
             ContentForTopTeams AS (
                 SELECT
@@ -233,6 +235,7 @@ const getMostFollowedTeams = async (req, res) => {
                     \`project-sandbox-445319.mlb.all-fan-interaction\` afi
                 CROSS JOIN Top5Teams t
                 WHERE t.team_id IN (SELECT SAFE_CAST(id as INT64) FROM UNNEST(afi.team_ids) as id)
+                AND afi.content_type = 'article'
             ),
             SlugCounts AS (
                 SELECT
@@ -263,8 +266,8 @@ const getMostFollowedTeams = async (req, res) => {
                 tap.content_headline
             FROM TopArticlePerTeam tap JOIN Top5Teams tt on tap.team_id = tt.team_id
             ORDER BY tt.team_rank ASC;
-          `;
-          const queryResults = await runQuery(sqlQuery);
+        `;
+        const queryResults = await runQuery(sqlQuery);
 
         if (!queryResults) {
         return res.status(500).json({ error: 'Failed to retrieve user data from BigQuery' });
@@ -318,7 +321,8 @@ const getMostRelevantNews = async (req, res) => {
             FROM \`project-sandbox-445319.mlb.all-fan-interaction\`
             )
             WHERE 
-                NOT (
+                content_type = 'article' 
+                AND NOT (
                     slug = 'c-2523586283' AND
                     content_type = 'video' AND
                     content_headline = 'Gameday Video Placement clip'
@@ -380,6 +384,7 @@ const getTeamSpecificNews = async (req, res) => {
                 \`project-sandbox-445319.mlb.all-fan-interaction\`
             WHERE 
                 @teamIdParam IN UNNEST(team_ids)
+                AND content_type = 'article'
                 AND NOT (
                     slug = 'c-2523586283' AND
                     content_type = 'video' AND
@@ -447,6 +452,7 @@ const getPlayerNews = async (req, res) => {
                 UNNEST(player_tags) AS playerId
             WHERE 
                 playerId = @playerIdParam
+                AND content_type = 'article'
             GROUP BY 
                 slug, 
                 content_type, 
