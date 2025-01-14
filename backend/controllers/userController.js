@@ -575,6 +575,56 @@ const removeFavoriteTeam = async (req, res) => {
     }
 };
 
+const fetchYoutube = async (req, res) => {
+    const playerNames = req.body.playerNames; 
+    const API_KEY = process.env.YOUTUBE_API_KEY;
+
+    if (!playerNames || !API_KEY || playerNames.length === 0) {
+        console.log(API_KEY);
+        console.log(playerNames);
+        return res
+        .status(400)
+        .json({ error: 'Player names and API key are required.' });
+    }
+
+    try {
+        const allVideos = []; 
+        const publishedAfter = new Date();
+        publishedAfter.setDate(publishedAfter.getDate() - 1);
+        const publishedAfterIso = publishedAfter.toISOString();
+
+
+        for (const playerName of playerNames) {
+            const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
+                playerName
+              )}%20news&maxResults=10&type=video&order=date&publishedAfter=${publishedAfterIso}&key=${API_KEY}`;
+            console.log(searchUrl);
+            const response = await fetch(searchUrl);
+            if (!response.ok) {
+                console.error(`YouTube API request failed for ${playerName} with status ${response.status}`);
+                continue;
+            }
+
+            const data = await response.json();
+
+            if (data.items && data.items.length > 0) {
+                const videos = data.items.map((video) => ({
+                playerName: playerName, 
+                videoId: video.id.videoId,
+                title: video.snippet.title,
+                description: video.snippet.description,
+                thumbnail: video.snippet.thumbnails.medium.url,
+                }));
+                allVideos.push(...videos); 
+            }
+        }
+
+        res.json(allVideos); 
+    } catch (error) {
+        console.error("Error fetching YouTube videos:", error);
+        res.status(500).json({ error: "Failed to fetch videos" });
+    }
+};
 
 module.exports = {
     getUser,
@@ -589,5 +639,6 @@ module.exports = {
     addPlayerFavorites,
     getFavoritedTeams,
     addFavoriteTeam,
-    removeFavoriteTeam
+    removeFavoriteTeam,
+    fetchYoutube
 }

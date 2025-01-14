@@ -1,8 +1,7 @@
 const { BigQuery } = require('@google-cloud/bigquery');
 const path = require('path');
 
-const keyPath = path.resolve(__dirname, '../config/project-sandbox-445319-28c933cdbe23.json');
-
+const keyPath = path.resolve(__dirname, `${process.env.GOOGLE_APPLICATION_CREDENTIALS}`);
 
 const bigqueryClient = new BigQuery({
     keyFilename: keyPath,
@@ -10,10 +9,10 @@ const bigqueryClient = new BigQuery({
 
 async function runQuery(sqlQuery, params = {}) { 
     try {
-      const options = {
-        query: sqlQuery,
-        params: params 
-    };
+        const options = {
+            query: sqlQuery,
+            params: params 
+        };
         const [job] = await bigqueryClient.createQueryJob(options);
         const [rows] = await job.getQueryResults();
         return rows;

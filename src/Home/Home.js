@@ -7,15 +7,16 @@ import { useNavigate } from 'react-router-dom';
 import BigQueryDataDisplay from './BigQueryDataDisplay/BigQueryDataDisplay';
 import GameStats from './GameStats/GameStats'
 import RelevantNews from './RelevantNews/RelevantNews';
+import DailyDigest from './DailyDigest/DailyDigest';
 
 function Home() {
-    const [searchQuery, setSearchQuery] = useState(''); // Combined search term for players and teams
+    const [searchQuery, setSearchQuery] = useState('');
     const [teams, setTeams] = useState([]);
-    const [allPlayers, setAllPlayers] = useState([]); // Store all players initially
-    const [filteredPlayers, setFilteredPlayers] = useState([]); // Players after filtering
+    const [allPlayers, setAllPlayers] = useState([]);
+    const [filteredPlayers, setFilteredPlayers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [dropdownVisible, setDropdownVisible] = useState(false); // Control visibility of combined dropdown
+    const [dropdownVisible, setDropdownVisible] = useState(false);
     const navigate = useNavigate();
     const [openLogin, setLoginOpen] = useState(false);
 
@@ -29,8 +30,8 @@ function Home() {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            setAllPlayers(data.people || []); // Store all players
-            setFilteredPlayers(data.people || []); //Initial full list for filtering
+            setAllPlayers(data.people || []); 
+            setFilteredPlayers(data.people || []); 
         } catch (error) {
             console.error("Error fetching all players:", error);
             setError("Failed to load players.");
@@ -43,13 +44,13 @@ function Home() {
     
     useEffect(() => {
       if (!searchQuery) {
-          setFilteredPlayers(allPlayers); // Show all players if the search is empty.
+          setFilteredPlayers([]); 
           return;
       }
       const filtered = allPlayers.filter((player) =>
           player.fullName.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      setFilteredPlayers(filtered); // Update filtered players state with filtered list
+      setFilteredPlayers(filtered);
      }, [searchQuery, allPlayers]);
 
     useEffect(() => {
@@ -80,7 +81,7 @@ function Home() {
 
     const handleItemClick = (item, type) => {
         setSearchQuery(item.name);
-        setDropdownVisible(false); // Hide dropdown after selection
+        setDropdownVisible(false); 
       
         if (type === 'team') {
             navigate(`/team/${item.id}/${item.name}`);
@@ -92,7 +93,7 @@ function Home() {
 
     const handleInputChange = (e) => {
         setSearchQuery(e.target.value);
-        setDropdownVisible(true); // Show dropdown on input change
+        setDropdownVisible(true); 
     };
 
     const handleIconClick = () => {
@@ -104,7 +105,7 @@ function Home() {
       }
     };
     const handleLoginClose = () => {
-      setLoginOpen(false); // Close the modal
+      setLoginOpen(false); 
     };
     
     return (
@@ -133,22 +134,21 @@ function Home() {
                         onChange={handleInputChange}
                         className='search-bar-home'
                     />
-                  {loading && <p>Loading...</p>}
                   {error && <p>{error}</p>}
-                    {dropdownVisible && (teams.length > 0 || filteredPlayers.length > 0) && (
-                        <ul className="search-dropdown">
-                            {teams.map((team) => (
-                                <li key={team.id} onClick={() => handleItemClick(team, 'team')}>
-                                    {team.name} ({team.locationName})
-                                </li>
-                            ))}
-                            {filteredPlayers.map((player) => (
-                                <li key={player.id} onClick={() => handleItemClick(player, 'player')}>
-                                    {player.fullName}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                  {dropdownVisible && (teams.length > 0 || filteredPlayers.length > 0) && (
+                      <ul className="search-dropdown">
+                          {teams.map((team) => (
+                              <li key={team.id} onClick={() => handleItemClick(team, 'team')}>
+                                  {team.name} ({team.locationName})
+                              </li>
+                          ))}
+                          {filteredPlayers.map((player) => (
+                              <li key={player.id} onClick={() => handleItemClick(player, 'player')}>
+                                  {player.fullName}
+                              </li>
+                          ))}
+                      </ul>
+                  )}
                 </header>
             </div>
             <div className="App-feed">
@@ -163,6 +163,7 @@ function Home() {
             </div>
             <div className="Card-container-right">
                 <h1 className='sub-title'>Daily Digest</h1>
+                <DailyDigest/>
             </div>
         </div>
     );

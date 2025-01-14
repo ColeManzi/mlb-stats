@@ -17,9 +17,9 @@ const TeamInfo = () => {
     const [teamInfo, setTeamInfo] = useState(null);
     const [teamInfoLoading, setTeamInfoLoading] = useState(false);
     const [teamInfoError, setTeamInfoError] = useState(null);
-     const [starredTeams, setStarredTeams] = useState({}); // New state for teams
+     const [starredTeams, setStarredTeams] = useState({}); 
     const navigate = useNavigate();
-    const [message, setMessage] = useState(null); // Message state
+    const [message, setMessage] = useState(null); 
     useEffect(() => {
          const fetchTeamRoster = async () => {
             if (!teamId) return;
@@ -118,7 +118,7 @@ const TeamInfo = () => {
       const accessToken = localStorage.getItem('accessToken');
         if(!accessToken) {
            setMessage("You must be logged in to favorite players!");
-            setTimeout(() => setMessage(null), 3000); // Clear message after 3 seconds
+            setTimeout(() => setMessage(null), 3000);
         }
         else {
               setStarredPlayers((prevState) => {
@@ -148,7 +148,7 @@ const TeamInfo = () => {
         const accessToken = localStorage.getItem('accessToken');
         if(!accessToken) {
              setMessage("You must be logged in to favorite teams!");
-            setTimeout(() => setMessage(null), 3000); // Clear message after 3 seconds
+            setTimeout(() => setMessage(null), 3000); 
         } else {
               setStarredTeams((prevState) => {
                 const isCurrentlyStarred = !!prevState[teamId];

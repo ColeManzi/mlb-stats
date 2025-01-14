@@ -57,30 +57,29 @@ function Account() {
 
     const fetchTeamAndPlayerNames = async (playerIds, teamIds) => {
         setLoadingTeamsPlayers(true);
-      try {
-
-          if (teamIds && teamIds.length > 0) {
-              const teamNames = await Promise.all(teamIds.map(async (teamId) => {
-                  const teamResponse = await axios.get(`https://statsapi.mlb.com/api/v1/teams/${teamId}`);
-                  return teamResponse.data.teams[0].name
-              }))
-              setFavoriteTeams(teamNames)
-          }
-          if (playerIds && playerIds.length > 0) {
-              const playerNames = await Promise.all(playerIds.map(async (playerId) => {
-                  const playerResponse = await axios.get(`https://statsapi.mlb.com/api/v1/people/${playerId}`);
-                  return playerResponse.data.people[0].fullName
-              }));
-              setFavoritePlayers(playerNames)
-          }
-      } catch (error) {
-          console.error('Error fetching favorite teams and players', error);
-          setError(
-              'Error fetching favorite teams and players'
-          );
-      } finally {
-          setLoadingTeamsPlayers(false);
-      }
+        try {
+            if (teamIds && teamIds.length > 0) {
+                const teamNames = await Promise.all(teamIds.map(async (teamId) => {
+                    const teamResponse = await axios.get(`https://statsapi.mlb.com/api/v1/teams/${teamId}`);
+                    return teamResponse.data.teams[0].name
+                }))
+                setFavoriteTeams(teamNames)
+            }
+            if (playerIds && playerIds.length > 0) {
+                const playerNames = await Promise.all(playerIds.map(async (playerId) => {
+                    const playerResponse = await axios.get(`https://statsapi.mlb.com/api/v1/people/${playerId}`);
+                    return playerResponse.data.people[0].fullName
+                }));
+                setFavoritePlayers(playerNames)
+            }
+        } catch (error) {
+            console.error('Error fetching favorite teams and players', error);
+            setError(
+                'Error fetching favorite teams and players'
+            );
+        } finally {
+            setLoadingTeamsPlayers(false);
+        }
     };
 
 
