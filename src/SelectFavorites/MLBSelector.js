@@ -35,25 +35,25 @@ const MLBSelector = () => {
   }, []);
 
 
-    useEffect(() => {
-        const fetchPlayers = async () => {
-            try {
-                const response = await fetch('https://statsapi.mlb.com/api/v1/sports/1/players');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                setPlayers(data.people);
-            } catch (error) {
-                console.error("Error fetching players:", error);
-                setError("Failed to load players.");
-            } finally {
-                setLoading(false);
-            }
-        };
+  useEffect(() => {
+      const fetchPlayers = async () => {
+          try {
+              const response = await fetch('https://statsapi.mlb.com/api/v1/sports/1/players');
+              if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              const data = await response.json();
+              setPlayers(data.people);
+          } catch (error) {
+              console.error("Error fetching players:", error);
+              setError("Failed to load players.");
+          } finally {
+              setLoading(false);
+          }
+      };
 
-        fetchPlayers();
-    }, []);
+      fetchPlayers();
+  }, []);
 
   const handleTeamSelect = (teamId) => {
     if (selectedTeams.includes(teamId)) {

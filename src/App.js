@@ -13,7 +13,7 @@ function App() {
             <Route path="/" element={<Home/>} />
             <Route path="/account" element={<Account />} />
             <Route path="/team/:teamId/:teamName" element={<TeamInfo />} />
-            <Route path="/team/:teamId/:teamName/:playerId/:playerName" element={<PlayerInfo />} />
+            <Route path="/player/:playerId/:playerName" element={<PlayerInfo />} />
             <Route path="/selectFavorites" element={<MLBSelector />} />
         </Routes>         
     </Router>

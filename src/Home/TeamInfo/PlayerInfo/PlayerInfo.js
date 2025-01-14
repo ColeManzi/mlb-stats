@@ -6,7 +6,7 @@ import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 
 const PlayerInfo = () => {
-    const { teamId, teamName, playerId: playerIdParam, playerName } = useParams();
+    const { playerId: playerIdParam, playerName } = useParams();
     const playerId = parseInt(playerIdParam, 10);
     const navigate = useNavigate();
     const [imageUrl, setImageUrl] = useState('');

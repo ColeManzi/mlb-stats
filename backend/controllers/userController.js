@@ -100,7 +100,7 @@ const getFavoritedTeams = async (req, res) => {
             return res.status(500).send('usersCollection not initialized.');
         }
 
-        const user = await usersCollection.findOne({ _id: new ObjectId(req.user._id) });
+        const user = await usersCollection.findOne({ _id: new ObjectId(req.user.userId) });
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -490,7 +490,6 @@ const getPlayerNews = async (req, res) => {
     }
 };
 
-
 const addPlayerFavorites = async (req, res) => {
     const { favoriteTeams, favoritePlayers } = req.body;
     const { usersCollection } = config.getDb();
@@ -528,6 +527,55 @@ const addPlayerFavorites = async (req, res) => {
     }
 };
 
+const addFavoriteTeam = async (req, res) => {
+    const { usersCollection } = config.getDb();
+    const { teamId } = req.body;
+    try {
+        if(!usersCollection){
+            return res.status(500).send('usersCollection not initialized.');
+        }
+
+            const result = await usersCollection.updateOne(
+                { _id: new ObjectId(req.user.userId) },
+                { $addToSet: { teamIds: teamId } }
+            );
+
+            if (result.modifiedCount > 0) {
+                res.status(200).json({ message: 'Team ID added successfully.' });
+            } else {
+                res.status(404).json({ message: 'Adding: User not found or Team ID was already added.' });
+            }
+    } catch (error) {
+        console.error("Error adding Team ID", error);
+        res.status(500).json({ message: 'Error adding Team ID', error: error.message });
+    }
+};
+
+const removeFavoriteTeam = async (req, res) => {
+    const { usersCollection } = config.getDb();
+    const { teamId } = req.body;
+    try {
+        if(!usersCollection){
+            return res.status(500).send('usersCollection not initialized.');
+        }
+
+        const result = await usersCollection.updateOne(
+            { _id: new ObjectId(req.user.userId) },
+            { $pull: { teamIds: teamId } }
+        );
+
+        if (result.modifiedCount > 0) {
+            res.status(200).json({ message: 'Team ID removed successfully.' });
+        } else {
+            res.status(404).json({ message: 'UnAdding: user not found or team ID was not in list.' });
+        }
+    } catch (error) {
+        console.error("Error removing team ID", error);
+        res.status(500).json({ message: 'Error removing team ID', error: error.message });
+    }
+};
+
+
 module.exports = {
     getUser,
     addPlayerId,
@@ -539,5 +587,7 @@ module.exports = {
     getTeamSpecificNews,
     getPlayerNews,
     addPlayerFavorites,
-    getFavoritedTeams
+    getFavoritedTeams,
+    addFavoriteTeam,
+    removeFavoriteTeam
 }

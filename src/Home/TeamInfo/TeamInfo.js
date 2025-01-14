@@ -8,7 +8,8 @@ import TeamSpecificNews from './TeamSpecificNews/TeamSpecificNews';
 import Games from './Games/Games'
 
 const TeamInfo = () => {
-    const { teamId, teamName } = useParams();
+    const { teamId: teamIdParam, teamName } = useParams();
+    const teamId = parseInt(teamIdParam, 10);
     const [rosterData, setRosterData] = useState(null);
     const [rosterLoading, setRosterLoading] = useState(false);
     const [rosterError, setRosterError] = useState(null);
@@ -16,9 +17,9 @@ const TeamInfo = () => {
     const [teamInfo, setTeamInfo] = useState(null);
     const [teamInfoLoading, setTeamInfoLoading] = useState(false);
     const [teamInfoError, setTeamInfoError] = useState(null);
+     const [starredTeams, setStarredTeams] = useState({}); // New state for teams
     const navigate = useNavigate();
     const [message, setMessage] = useState(null); // Message state
-
     useEffect(() => {
          const fetchTeamRoster = async () => {
             if (!teamId) return;
@@ -80,16 +81,40 @@ const TeamInfo = () => {
               }
           }
         };
+        const fetchInitialStarredTeams = async () => {
+            const accessToken = localStorage.getItem('accessToken');
+            if (accessToken) {
+                try {
+                    const response = await axios.get('http://localhost:5000/api/users/fetch-teams', {
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`
+                        }
+                    });
+                    if (response.status === 200 && response.data && response.data.teamIds) {
+                        const initialStarred = response.data.teamIds.reduce((acc, teamId) => {
+                            acc[teamId] = true;
+                            return acc;
+                            }, {});
+                        setStarredTeams(initialStarred);
+                    } else {
+                        console.log('Could not get users favorite teams')
+                    }
+                } catch (error) {
+                    console.error("There was an error getting the users favorite teams:", error);
+                }
+            }
+        };
         fetchTeamRoster();
         fetchTeamInfo();
         fetchInitialStarredPlayers();
+        fetchInitialStarredTeams();
     }, [teamId]);
 
     const handlePlayerClick = (playerId, playerName) => {
-        navigate(`${playerId}/${playerName}`);  
+        navigate(`/player/${playerId}/${playerName}`);  
     };
 
-  const handleStarClick = (playerId) => {
+  const handleStarClickPlayer = (playerId) => {
       const accessToken = localStorage.getItem('accessToken');
         if(!accessToken) {
            setMessage("You must be logged in to favorite players!");
@@ -119,6 +144,34 @@ const TeamInfo = () => {
               });
           }
       };
+  const handleStarClickTeam = (teamId) => {
+        const accessToken = localStorage.getItem('accessToken');
+        if(!accessToken) {
+             setMessage("You must be logged in to favorite teams!");
+            setTimeout(() => setMessage(null), 3000); // Clear message after 3 seconds
+        } else {
+              setStarredTeams((prevState) => {
+                const isCurrentlyStarred = !!prevState[teamId];
+                if (isCurrentlyStarred) {
+                      handleRemoveTeamId(teamId);
+                       setMessage('Team removed from favorites');
+                       setTimeout(() => setMessage(null), 3000);
+                     return {
+                           ...prevState,
+                         [teamId]: false,
+                        };
+                 } else {
+                   handleAddTeamId(teamId);
+                  setMessage('Team favorited successfully!');
+                 setTimeout(() => setMessage(null), 3000);
+                   return {
+                       ...prevState,
+                       [teamId]: true,
+                      };
+                  }
+              });
+        }
+  };
 
   const handleAddPlayerId = async (playerId) => {
       try {
@@ -139,27 +192,65 @@ const TeamInfo = () => {
           console.error("There was an error adding the player id:", error)
       }
   }
-
+  const handleAddTeamId = async (teamId) => {
+        try {
+            const accessToken = localStorage.getItem('accessToken')
+            const response = await axios.put('http://localhost:5000/api/users/add-team', {
+                teamId: teamId
+            }, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+            if (response.status === 200) {
+                console.log("Team ID added successfully")
+            } else {
+                console.log("There was an issue adding the Team ID")
+            }
+        } catch (error) {
+            console.error("There was an error adding the team id:", error)
+        }
+    };
   const handleRemovePlayerId = async (playerId) => {
-      try {
-      const accessToken = localStorage.getItem('accessToken')
-      const response = await axios.delete('http://localhost:5000/api/users', {
-              headers: {
-              Authorization: `Bearer ${accessToken}`
-              },
-          data: {
-              playerId: playerId
-          }
-      });
-      if (response.status === 200) {
-          console.log("Player ID removed successfully")
-      } else {
-          console.log("There was an issue removing the Player ID")
-      }
-      } catch (error) {
-          console.error("There was an error removing the player id:", error)
-      }
+        try {
+        const accessToken = localStorage.getItem('accessToken')
+        const response = await axios.delete('http://localhost:5000/api/users', {
+                headers: {
+                Authorization: `Bearer ${accessToken}`
+                },
+            data: {
+                playerId: playerId
+            }
+        });
+        if (response.status === 200) {
+            console.log("Player ID removed successfully")
+        } else {
+            console.log("There was an issue removing the Player ID")
+        }
+        } catch (error) {
+            console.error("There was an error removing the player id:", error)
+        }
   }
+    const handleRemoveTeamId = async (teamId) => {
+        try {
+            const accessToken = localStorage.getItem('accessToken')
+            const response = await axios.delete('http://localhost:5000/api/users/remove-team', {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                },
+                data: {
+                    teamId: teamId
+                }
+            });
+            if (response.status === 200) {
+                console.log("Team ID removed successfully")
+            } else {
+                console.log("There was an issue removing the Team ID")
+            }
+        } catch (error) {
+            console.error("There was an error removing the team id:", error)
+        }
+    };
 
   if (!teamInfo || !teamInfo.teams || teamInfo.teams.length === 0) {
     return <div>Loading team information...</div>; 
@@ -167,13 +258,24 @@ const TeamInfo = () => {
 
     return (
         <div className="background">
-             {message && (
+            {message && (
                 <div className="message-popup">
-                     {message}
+                    {message}
                 </div>
             )}
             <div className="background-team-title">
-                <h3> {`${teamName}`} </h3>
+                <h3> {`${teamName}`} 
+                    <span
+                        onClick={() => handleStarClickTeam(teamId)}
+                        style={{ cursor: 'pointer', marginLeft: '5px' }}
+                    >
+                    {starredTeams[teamId] ? (
+                        <StarIcon className="star-icon" />
+                        ) : (
+                        <StarBorderIcon className="star-icon" />
+                        )}
+                    </span>
+                </h3>
             </div>
             <div className="background-team-container">
                 <div className="background-teamlogo">
@@ -188,7 +290,7 @@ const TeamInfo = () => {
                     {teamInfoError && (
                         <p className="error">Error loading team info: {teamInfoError.message}</p>
                     )}
-                     {teamInfo && (
+                    {teamInfo && (
                         <>
                             <p><strong>Location:</strong> {teamInfo.teams[0].locationName}</p>
                             <p><strong>First Year:</strong> {teamInfo.teams[0].firstYearOfPlay}</p>
@@ -217,7 +319,7 @@ const TeamInfo = () => {
                             className="star-icon"
                             onClick={(e) => {
                             e.stopPropagation();
-                            handleStarClick(player.person.id);
+                            handleStarClickPlayer(player.person.id);
                             }}
                         >
                             {starredPlayers[player.person.id] ? (
@@ -230,14 +332,14 @@ const TeamInfo = () => {
                     ))}
                 </ul>
             )}
-        <div className="background-recent-games">
-            <h3 className="sub-title"> Previous Games</h3>
-            <Games firstYearOfPlay={teamInfo.teams[0].firstYearOfPlay}/>
-        </div>
-        <div className="background-team-news">
-            <h3 className="sub-title"> Team News</h3>
-            <TeamSpecificNews/>
-        </div>
+            <div className="background-recent-games">
+                <h3 className="sub-title"> Previous Games</h3>
+                <Games firstYearOfPlay={teamInfo.teams[0].firstYearOfPlay}/>
+            </div>
+            <div className="background-team-news">
+                <h3 className="sub-title"> Team News</h3>
+                <TeamSpecificNews/>
+            </div>
         </div>
     );
 };
