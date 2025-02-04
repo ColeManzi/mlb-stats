@@ -81,20 +81,10 @@ const GameStats = () => {
 
         const videoUrl = `https://www.mlb.com/video/search?q=playid="${playId}"`;
 
-        const apiKey = process.env.REACT_APP_API_KEY;
-        if (!apiKey) {
-            throw new Error("Missing REACT_APP_API_KEY environment variable. Cannot access the Google Gemini API.");
-        }
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-        const prompt = `During the game between the home team ${homeTeam} and the away team ${awayTeam}, using the following game play data: ${JSON.stringify(currentPlay)}. Tell me about the last play of the game. Refer to the teams by their names.`;
-        const result = await model.generateContent(prompt);
-        const gameSummary = result.response.text();
 
 
         return {
             gamePk: gamePk,
-            summary: gameSummary,
             videoLink: videoUrl,
             awayTeam: awayTeam,
             homeTeam: homeTeam,
@@ -142,7 +132,6 @@ const GameStats = () => {
                         <span className="awayScore"> {gameInfo.awayScore}</span> -{' '}
                         <span className="homeScore">{gameInfo.homeScore}</span>
                     </div>
-                    <p className="summaryText">{gameInfo.summary}</p>
                     </div>
 
                     {gameInfo.videoLink && (
