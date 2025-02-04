@@ -17,6 +17,7 @@ router.get('/users/bigquery/relevant-news', userController.getMostRelevantNews);
 router.get('/users/bigquery/followed-teams', userController.getMostFollowedTeams);
 router.get('/users/bigquery/team-news/:teamId', userController.getTeamSpecificNews);
 router.get('/users/bigquery/player-news/:playerId', userController.getPlayerNews);
-router.post('/users/fetch-youtube-videos', userController.fetchYoutube);
+router.get('/users/fetch-youtube-videos/:name', userController.fetchYoutube);
+router.post('/users/generate-news/:name', userController.generateNews);
 
 module.exports = router;

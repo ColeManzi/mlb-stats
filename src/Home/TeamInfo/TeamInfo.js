@@ -144,57 +144,83 @@ const TeamInfo = () => {
               });
           }
       };
-  const handleStarClickTeam = (teamId) => {
+    const handleStarClickTeam = (teamId) => {
         const accessToken = localStorage.getItem('accessToken');
         if(!accessToken) {
-             setMessage("You must be logged in to favorite teams!");
+            setMessage("You must be logged in to favorite teams!");
             setTimeout(() => setMessage(null), 3000); 
         } else {
-              setStarredTeams((prevState) => {
+            setStarredTeams((prevState) => {
                 const isCurrentlyStarred = !!prevState[teamId];
                 if (isCurrentlyStarred) {
-                      handleRemoveTeamId(teamId);
-                       setMessage('Team removed from favorites');
-                       setTimeout(() => setMessage(null), 3000);
-                     return {
-                           ...prevState,
-                         [teamId]: false,
+                    handleRemoveTeamId(teamId);
+                    setMessage('Team removed from favorites');
+                    setTimeout(() => setMessage(null), 3000);
+                    return {
+                        ...prevState,
+                        [teamId]: false,
                         };
-                 } else {
-                   handleAddTeamId(teamId);
-                  setMessage('Team favorited successfully!');
-                 setTimeout(() => setMessage(null), 3000);
-                   return {
-                       ...prevState,
-                       [teamId]: true,
-                      };
-                  }
-              });
+                } else {
+                handleAddTeamId(teamId);
+                setMessage('Team favorited successfully!');
+                setTimeout(() => setMessage(null), 3000);
+                return {
+                    ...prevState,
+                    [teamId]: true,
+                    };
+                }
+            });
         }
-  };
+    };
 
-  const handleAddPlayerId = async (playerId) => {
-      try {
-        const accessToken = localStorage.getItem('accessToken')
-        const response = await axios.put('http://localhost:5000/api/users', {
-             playerId: playerId
-          }, {
-              headers: {
-                Authorization: `Bearer ${accessToken}`
-            }
-          });
-          if (response.status === 200) {
-              console.log("Player ID added successfully")
-          } else {
-              console.log("There was an issue adding the Player ID")
-          }
-      } catch (error) {
-          console.error("There was an error adding the player id:", error)
-      }
-  }
-  const handleAddTeamId = async (teamId) => {
+    const handleAddPlayerId = async (playerId) => {
         try {
             const accessToken = localStorage.getItem('accessToken')
+            const response = await axios.put('http://localhost:5000/api/users', {
+                playerId: playerId
+            }, {
+                headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+            });
+            if (response.status === 200) {
+                console.log("Player ID added successfully");
+                    // After successfully adding the player to the backend, update sessionStorage
+                try{
+                    const playerResponse = await axios.get(`https://statsapi.mlb.com/api/v1/people/${playerId}`);
+                    const playerName = playerResponse.data.people[0].fullName;
+                    
+                    const favoritesJSON = sessionStorage.getItem('favorites');
+                    let favoritesArray = [];
+
+                    if (favoritesJSON) {
+                    favoritesArray = JSON.parse(favoritesJSON);
+                    }
+
+                    // Add name if it doesn't exist
+                if(!favoritesArray.includes(playerName)){
+                    favoritesArray.push(playerName);
+                    sessionStorage.setItem('favorites', JSON.stringify(favoritesArray));
+                    console.log("Player added successfully to favorites in session storage", playerName);
+                    } else {
+                        console.log('Player already exists in favorites', playerName);
+                    }
+
+                } catch(error){
+                    console.error('Error adding name to favorites', error)
+                }
+
+
+            } else {
+                console.log("There was an issue adding the Player ID")
+            }
+        } catch (error) {
+            console.error("There was an error adding the player id:", error)
+        }
+    };
+    const handleAddTeamId = async (teamId) => {
+        try {
+            const accessToken = localStorage.getItem('accessToken');
             const response = await axios.put('http://localhost:5000/api/users/add-team', {
                 teamId: teamId
             }, {
@@ -202,38 +228,88 @@ const TeamInfo = () => {
                     Authorization: `Bearer ${accessToken}`
                 }
             });
+    
             if (response.status === 200) {
-                console.log("Team ID added successfully")
+                console.log("Team ID added successfully");
+    
+                try {
+                    // Fetch the team name from the MLB API
+                    const teamResponse = await axios.get(`https://statsapi.mlb.com/api/v1/teams/${teamId}`);
+                    const teamName = teamResponse.data.teams[0].name;
+
+
+                    // Update sessionStorage with the new team name
+                    const favoritesJSON = sessionStorage.getItem('favorites');
+                    let favoritesArray = [];
+
+                    if (favoritesJSON) {
+                        favoritesArray = JSON.parse(favoritesJSON);
+                    }
+
+                        // Add name if it doesn't exist
+                    if(!favoritesArray.includes(teamName)){
+                            favoritesArray.push(teamName);
+                            sessionStorage.setItem('favorites', JSON.stringify(favoritesArray));
+                            console.log("Team added successfully to favorites in session storage", teamName);
+                    } else {
+                        console.log('Team already exists in favorites', teamName);
+                    }
+                }
+                catch(error){
+                    console.error('Error adding name to favorites', error)
+                }
             } else {
-                console.log("There was an issue adding the Team ID")
+                console.log("There was an issue adding the Team ID");
             }
         } catch (error) {
-            console.error("There was an error adding the team id:", error)
+            console.error("There was an error adding the team id:", error);
         }
     };
-  const handleRemovePlayerId = async (playerId) => {
+    
+    const handleRemovePlayerId = async (playerId) => {
         try {
-        const accessToken = localStorage.getItem('accessToken')
-        const response = await axios.delete('http://localhost:5000/api/users', {
+            const accessToken = localStorage.getItem('accessToken');
+            const response = await axios.delete('http://localhost:5000/api/users', {
                 headers: {
-                Authorization: `Bearer ${accessToken}`
+                    Authorization: `Bearer ${accessToken}`
                 },
-            data: {
-                playerId: playerId
+                data: {
+                    playerId: playerId
+                }
+            });
+    
+            if (response.status === 200) {
+                console.log("Player ID removed successfully");
+    
+                // After successfully removing the player from the backend, update sessionStorage
+                try {
+                    const playerResponse = await axios.get(`https://statsapi.mlb.com/api/v1/people/${playerId}`);
+                    const playerName = playerResponse.data.people[0].fullName;
+
+                    const favoritesJSON = sessionStorage.getItem('favorites');
+                    if (favoritesJSON) {
+                        const favoritesArray = JSON.parse(favoritesJSON);
+                            const updatedFavorites = favoritesArray.filter(name => name !== playerName);
+                        sessionStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+                        console.log(`Removed ${playerName} from favorites. Updated favorites:`, updatedFavorites);
+
+                    } else {
+                        console.log("No favorites found in session storage")
+                    }
+               
+                } catch (error) {
+                        console.error('Error removing player from favorites in session storage:', error);
+                }
+            } else {
+                console.log("There was an issue removing the Player ID");
             }
-        });
-        if (response.status === 200) {
-            console.log("Player ID removed successfully")
-        } else {
-            console.log("There was an issue removing the Player ID")
-        }
         } catch (error) {
-            console.error("There was an error removing the player id:", error)
+            console.error("There was an error removing the player id:", error);
         }
-  }
+    };
     const handleRemoveTeamId = async (teamId) => {
         try {
-            const accessToken = localStorage.getItem('accessToken')
+            const accessToken = localStorage.getItem('accessToken');
             const response = await axios.delete('http://localhost:5000/api/users/remove-team', {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
@@ -242,13 +318,33 @@ const TeamInfo = () => {
                     teamId: teamId
                 }
             });
+
             if (response.status === 200) {
-                console.log("Team ID removed successfully")
+                console.log("Team ID removed successfully");
+
+                try {
+                        // Fetch the team name from the MLB API
+                    const teamResponse = await axios.get(`https://statsapi.mlb.com/api/v1/teams/${teamId}`);
+                    const teamName = teamResponse.data.teams[0].name;
+                    // Update sessionStorage to remove the team name
+                    const favoritesJSON = sessionStorage.getItem('favorites');
+                    if (favoritesJSON) {
+                    const favoritesArray = JSON.parse(favoritesJSON);
+                        const updatedFavorites = favoritesArray.filter(name => name !== teamName);
+                        sessionStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+                        console.log(`Removed ${teamName} from favorites. Updated favorites:`, updatedFavorites);
+
+                    } else {
+                    console.log('No favorites found in session storage');
+                    }
+                } catch (error) {
+                        console.error('Error removing team from favorites in session storage:', error);
+                }
             } else {
-                console.log("There was an issue removing the Team ID")
+                console.log("There was an issue removing the Team ID");
             }
         } catch (error) {
-            console.error("There was an error removing the team id:", error)
+            console.error("There was an error removing the team id:", error);
         }
     };
 

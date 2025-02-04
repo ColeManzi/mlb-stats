@@ -8,7 +8,7 @@ const { hashPassword } = require('../utils');
 
 const login = async (req, res) => {
     const { email, password } = req.body;
-     const {usersCollection } = config.getDb()
+    const {usersCollection } = config.getDb()
     try {
         if(!usersCollection){
             return res.status(500).send({ message: "usersCollection not initialized" });
@@ -20,9 +20,9 @@ const login = async (req, res) => {
         }
         //const passwordMatch = await bcrypt.compare(password, user.password);
 
-       //if (!passwordMatch) {
+        //if (!passwordMatch) {
         //    return res.status(401).json({ message: 'Invalid credentials' });
-       //}
+        //}
         const accessToken = jwt.sign({ userId: user._id, username: user.username }, SECRET_KEY, {
             expiresIn: '15m',
         });
@@ -31,7 +31,7 @@ const login = async (req, res) => {
             expiresIn: '7d',
         });
 
-        res.json({ accessToken: accessToken, refreshToken: refreshToken });
+        res.json({ accessToken: accessToken, refreshToken: refreshToken, playerIds: user.playerIds, teamIds: user.teamIds });
     } catch (error) {
         console.error("Error logging in", error)
         res.status(500).send({message: "There was an error logging you in", error: error.message}); // use res.status().send()

@@ -90,6 +90,7 @@ function Account() {
     const handleLogout = (e) => {
         localStorage.removeItem('accessToken')
         localStorage.removeItem('refreshToken')
+        sessionStorage.removeItem('favorites')
         navigate("/");
     };
 

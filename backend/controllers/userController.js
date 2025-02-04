@@ -2,11 +2,10 @@ const { ObjectId } = require('mongodb');
 const config = require('../config');
 const { runQuery } = require('../utils');
 
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenerativeAI, Part } = require("@google/generative-ai");
 
 const genAI = new GoogleGenerativeAI(process.env.REACT_APP_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
 
 const getUser = async (req, res) => {
   const { usersCollection } = config.getDb()
@@ -582,53 +581,169 @@ const removeFavoriteTeam = async (req, res) => {
 };
 
 const fetchYoutube = async (req, res) => {
-    const playerNames = req.body.playerNames; 
-    const API_KEY = process.env.YOUTUBE_API_KEY;
+    const { name } = req.params;
 
-    if (!playerNames || !API_KEY || playerNames.length === 0) {
-        console.log(API_KEY);
-        console.log(playerNames);
-        return res
-        .status(400)
-        .json({ error: 'Player names and API key are required.' });
+    try {
+        const today = new Date();
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const day = String(today.getDate()).padStart(2, '0');
+        const year = today.getFullYear();
+        const formattedDate = `${month}-${day}-${year}`; // Format as YYYY-MM-DD for bigquery
+
+        const sqlQuery = `
+            SELECT
+                geminiVideoSummary,
+                videoURL
+            FROM
+                \`project-sandbox-445319.youtube_summaries.video_summaries\`
+            WHERE
+                insertion_timestamp = @date_parameter
+                AND search_query = @name_parameter
+            LIMIT 1;
+          `;
+        const queryResults = await runQuery(sqlQuery, { date_parameter: formattedDate, name_parameter: name });
+
+        if (!queryResults || queryResults.length === 0) {
+            return res.status(404).json({ message: 'No matching video summary found.' });
+        }
+        
+        const geminiSummary = queryResults[0].geminiVideoSummary;
+        const videoURL = queryResults[0].videoURL;
+
+        res.status(200).json({
+            data: {
+              geminiVideoSummary: geminiSummary,
+              videoURL: videoURL
+            }
+        });
+
+    } catch (error) {
+        console.error('Error retrieving video summary from BigQuery:', error);
+        res.status(500).json({ error: 'Failed to retrieve video summary from BigQuery' });
+    }
+};
+
+const formatDate = (date) => {
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Add 1 because getMonth() returns 0-11
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${month}-${day}-${year}`;
+};
+
+const generateNews = async (req, res) => {
+    const { summary } = req.body;
+    const { name } = req.params;
+
+    if (!summary) {
+        return res.status(400).json({ error: 'Summary is required in the request body' });
     }
 
     try {
-        const allVideos = []; 
-        const publishedAfter = new Date();
-        publishedAfter.setDate(publishedAfter.getDate() - 1);
-        const publishedAfterIso = publishedAfter.toISOString();
+        const prompt = `
+        Create a concise news headline and a detailed description from the following summary: ${summary}. The subject of the summary is ${name}.
 
+        The headline should be attention-grabbing and clearly indicate the main topic of the summary.
 
-        for (const playerName of playerNames) {
-            const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
-                playerName
-              )}%20news&maxResults=10&type=video&order=date&publishedAfter=${publishedAfterIso}&key=${API_KEY}`;
-            console.log(searchUrl);
-            const response = await fetch(searchUrl);
-            if (!response.ok) {
-                console.error(`YouTube API request failed for ${playerName} with status ${response.status}`);
-                continue;
+        The description should include:
+        *   Specific details about the most important events mentioned in the summary, explaining why they are significant.
+        *   The full names and roles of the key people mentioned, and how they impacted the event.
+        *   Quantifiable details whenever possible (e.g., scores, times, dates, amounts, statistics).
+        *   If multiple aspects of the topic are mentioned, focus on the most important.
+
+        Keep the description within 80 words. Prioritize key events, people, and details.
+
+        Return a JSON object with the following keys:
+        headline:
+        description:`;
+
+        const result = await model.generateContent({
+            contents: [{
+                parts: [{ text: prompt }],
+            }]
+        });
+
+        const response = result.response;
+        let responseText = response.text();
+
+        // Remove code fences, if present
+        responseText = responseText.replace(/```json\s*|```/g, '');
+
+        // Try to parse the JSON response
+        let responseBody;
+        try {
+            responseBody = JSON.parse(responseText);
+
+            // Validate the response
+            if (!responseBody.headline || !responseBody.description) {
+                throw new Error("Could not retrieve json or correct response keys");
+            }
+        } catch (e) {
+            console.log("Could not parse response as json, trying to parse using regex", e);
+
+            const headlineMatch = responseText.match(/headline:\s*(.+)/i);
+            const descriptionMatch = responseText.match(/description:\s*(.+)/i);
+
+            if (!headlineMatch || !descriptionMatch) {
+                throw new Error("Could not find headline or description keys using regex");
             }
 
-            const data = await response.json();
-
-            if (data.items && data.items.length > 0) {
-                const videos = data.items.map((video) => ({
-                playerName: playerName, 
-                videoId: video.id.videoId,
-                title: video.snippet.title,
-                description: video.snippet.description,
-                thumbnail: video.snippet.thumbnails.medium.url,
-                }));
-                allVideos.push(...videos); 
-            }
+            responseBody = {
+                headline: headlineMatch[1].trim(),
+                description: descriptionMatch[1].trim(),
+            };
         }
 
-        res.json(allVideos); 
+        const timestamp = formatDate(new Date());
+        /*
+        await updateBigQuery({
+            body: {
+                headline: responseBody.headline,
+                description: responseBody.description,
+                timestamp: timestamp
+            }
+        });
+        */
+
+        // Only send response after the BigQuery insert is complete
+        return res.status(200).json(responseBody); // Return the headline and description
+
     } catch (error) {
-        console.error("Error fetching YouTube videos:", error);
-        res.status(500).json({ error: "Failed to fetch videos" });
+        console.error('Error generating news:', error);
+        // Ensure only one response is sent in case of an error
+        if (!res.headersSent) {
+            return res.status(500).json({ error: 'Failed to generate news', details: error.message });
+        }
+    }
+};
+
+const updateBigQuery = async (req) => {
+    const { headline, description, timestamp } = req.body;
+
+    if (!headline || !description || !timestamp) {
+        throw new Error('Headline, description, and timestamp are required in the request body');
+    }
+
+    try {
+        const insertQuery = `
+            INSERT INTO \`project-sandbox-445319.youtube_summaries.generated_news\` (headline, description, timestamp)
+            VALUES (@headline, @description, @timestamp)
+        `;
+
+        const insertResponse = await runQuery(insertQuery, {
+            headline,
+            description,
+            timestamp
+        });
+
+        // Assuming insertResponse returns rows, you may need to check success status in a different way.
+        if (!insertResponse || insertResponse.length === 0) {
+            console.log("Error: Could not insert into BigQuery");
+            throw new Error("Could not insert into BigQuery");
+        }
+
+    } catch (error) {
+        console.error('Error writing to BigQuery:', error);
+        throw new Error('Failed to insert news into BigQuery');
     }
 };
 
@@ -646,5 +761,6 @@ module.exports = {
     getFavoritedTeams,
     addFavoriteTeam,
     removeFavoriteTeam,
-    fetchYoutube
+    fetchYoutube,
+    generateNews
 }

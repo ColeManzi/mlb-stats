@@ -145,44 +145,92 @@ const PlayerInfo = () => {
         }
     }
 
-   const handleAddPlayerId = async (playerId) => {
-      try {
-        const accessToken = localStorage.getItem('accessToken')
-        const response = await axios.put('http://localhost:5000/api/users', {
-             playerId: playerId
-          }, {
-              headers: {
-                Authorization: `Bearer ${accessToken}`
-            }
-          });
-          if (response.status === 200) {
-              console.log("Player ID added successfully")
-          } else {
-              console.log("There was an issue adding the Player ID")
-          }
-      } catch (error) {
-          console.error("There was an error adding the player id:", error)
-      }
-    };
 
-    const handleRemovePlayerId = async (playerId) => {
+    const handleAddPlayerId = async (playerId) => {
         try {
             const accessToken = localStorage.getItem('accessToken')
+            const response = await axios.put('http://localhost:5000/api/users', {
+                playerId: playerId
+            }, {
+                headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+            });
+            if (response.status === 200) {
+                console.log("Player ID added successfully");
+                    // After successfully adding the player to the backend, update sessionStorage
+                try{
+                    const playerResponse = await axios.get(`https://statsapi.mlb.com/api/v1/people/${playerId}`);
+                    const playerName = playerResponse.data.people[0].fullName;
+                    
+                    const favoritesJSON = sessionStorage.getItem('favorites');
+                    let favoritesArray = [];
+
+                    if (favoritesJSON) {
+                    favoritesArray = JSON.parse(favoritesJSON);
+                    }
+
+                    // Add name if it doesn't exist
+                if(!favoritesArray.includes(playerName)){
+                    favoritesArray.push(playerName);
+                    sessionStorage.setItem('favorites', JSON.stringify(favoritesArray));
+                    console.log("Player added successfully to favorites in session storage", playerName);
+                    } else {
+                        console.log('Player already exists in favorites', playerName);
+                    }
+
+                } catch(error){
+                    console.error('Error adding name to favorites', error)
+                }
+
+
+            } else {
+                console.log("There was an issue adding the Player ID")
+            }
+        } catch (error) {
+            console.error("There was an error adding the player id:", error)
+        }
+    };
+    
+    const handleRemovePlayerId = async (playerId) => {
+        try {
+            const accessToken = localStorage.getItem('accessToken');
             const response = await axios.delete('http://localhost:5000/api/users', {
-                    headers: {
+                headers: {
                     Authorization: `Bearer ${accessToken}`
-                    },
+                },
                 data: {
                     playerId: playerId
                 }
             });
+    
             if (response.status === 200) {
-                console.log("Player ID removed successfully")
+                console.log("Player ID removed successfully");
+    
+                // After successfully removing the player from the backend, update sessionStorage
+                try {
+                    const playerResponse = await axios.get(`https://statsapi.mlb.com/api/v1/people/${playerId}`);
+                    const playerName = playerResponse.data.people[0].fullName;
+
+                    const favoritesJSON = sessionStorage.getItem('favorites');
+                    if (favoritesJSON) {
+                        const favoritesArray = JSON.parse(favoritesJSON);
+                            const updatedFavorites = favoritesArray.filter(name => name !== playerName);
+                        sessionStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+                        console.log(`Removed ${playerName} from favorites. Updated favorites:`, updatedFavorites);
+
+                    } else {
+                        console.log("No favorites found in session storage")
+                    }
+               
+                } catch (error) {
+                        console.error('Error removing player from favorites in session storage:', error);
+                }
             } else {
-                console.log("There was an issue removing the Player ID")
+                console.log("There was an issue removing the Player ID");
             }
         } catch (error) {
-             console.error("There was an error removing the player id:", error)
+            console.error("There was an error removing the player id:", error);
         }
     };
     

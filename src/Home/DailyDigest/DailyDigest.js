@@ -1,130 +1,176 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './DailyDigest.css';
 
 function DailyDigest() {
-    const [videos, setVideos] = useState([]);
+    const [summaries, setSummaries] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [favorites, setFavoriteNames] = useState([]);
-    const accessToken = localStorage.getItem('accessToken'); 
-    const isLoggedIn = !!accessToken; 
+    const accessToken = localStorage.getItem('accessToken');
+    const isLoggedIn = !!accessToken;
+    const prevFavoritesRef = useRef([]);
+
 
     useEffect(() => {
-        async function fetchAndSetFavoritesAndVideos() {
+        // Check sessionStorage for favorites and set state
+        const storedFavorites = sessionStorage.getItem("favorites");
+        if (storedFavorites) {
+            try {
+                const parsedFavorites = JSON.parse(storedFavorites);
+                setFavoriteNames(parsedFavorites);
+                console.log('Loaded favorites from sessionStorage', parsedFavorites);
+                prevFavoritesRef.current = parsedFavorites;
+            } catch (error) {
+                console.log('Error loading favorites from session storage', error);
+            }
+        }
+
+    }, []); // Empty dependency array to load favorites once on mount
+
+    useEffect(() => {
+       
+        async function fetchSummaries() {
             if (!isLoggedIn) {
                 setLoading(false);
                 return;
             }
-    
+
             setLoading(true);
             setError(null);
-            let allNames = []; 
-    
-            try {
-                const headers = { Authorization: `Bearer ${accessToken}` };
-                const [teamIdsResponse, playerIdsResponse] = await Promise.allSettled([
-                    fetch("http://localhost:5000/api/users/fetch-teams", { headers }),
-                    fetch("http://localhost:5000/api/users/fetch-players", { headers }),
-                ]);
-    
-                let teamIds = [];
-                let playerIds = [];
-    
-                // Handle team IDs response
-                if (teamIdsResponse.status === 'fulfilled') {
-                    const teamIdsData = await teamIdsResponse.value.json();
-                    teamIds = teamIdsData.teamIds; // Extract the playerIds array
-                    console.log('Fetched teamIds:', teamIds); // Log the result
-                    if (!Array.isArray(teamIds)) {
-                        console.error('teamIds is not an array:', teamIds);
-                        teamIds = [];
+
+            // If favorites are empty, stop early
+            if (favorites.length === 0) {
+                setLoading(false);
+                setSummaries([]); // Ensure no summaries are displayed if no favorites.
+                return;
+            }
+
+            const cacheKey = 'dailyDigestData';
+             let cachedData = localStorage.getItem(cacheKey);
+             let cachedSummaries = {};
+             let cachedFavorites = [];
+
+            if (cachedData) {
+                try {
+                    const parsedCacheData = JSON.parse(cachedData);
+                   if (parsedCacheData && parsedCacheData.summaries) {
+                        cachedSummaries = parsedCacheData.summaries.reduce((acc, summary) => {
+                             acc[summary.name] = summary;
+                             return acc;
+                            }, {});
+                     }
+                    if(parsedCacheData && parsedCacheData.favorites)
+                    {
+                        cachedFavorites = parsedCacheData.favorites;
                     }
-                } else {
-                    console.error('Failed to fetch team IDs', teamIdsResponse.reason);
+
+
+                       console.log('Loaded data from cache', parsedCacheData);
+                   
+                } catch (error) {
+                     console.log("Error parsing cached data, fetching again", error);
                 }
-    
-                // Handle player IDs response
-                if (playerIdsResponse.status === 'fulfilled') {
-                    const playerIdsData = await playerIdsResponse.value.json();
-                    playerIds = playerIdsData.playerIds; 
-                    console.log('Fetched playerIds:', playerIds); 
-                    if (!Array.isArray(playerIds)) {
-                        console.error('playerIds is not an array:', playerIds);
-                        playerIds = [];
-                    }
-                } else {
-                    console.error('Failed to fetch player IDs', playerIdsResponse.reason);
-                }
-    
-                if (teamIds.length === 0 && playerIds.length === 0) {
-                    setLoading(false);
-                    return;
-                }
-    
-                // Fetch team names
-                const teamNamePromises = teamIds.map(async (teamId) => {
-                    const teamResponse = await fetch(`https://statsapi.mlb.com/api/v1/teams/${teamId}`);
-                    if (!teamResponse.ok) {
-                        console.log(`Failed to fetch team name for id ${teamId}`);
-                        throw new Error(`Failed to fetch team name for id ${teamId}`);
-                    }
-                    const teamData = await teamResponse.json();
-                    return teamData.teams[0].name;
-                });
-    
-                // Fetch player names
-                const playerNamePromises = playerIds.map(async (playerId) => {
-                    const playerResponse = await fetch(`https://statsapi.mlb.com/api/v1/people/${playerId}`);
-                    if (!playerResponse.ok) {
-                        console.log(`Failed to fetch player name for id ${playerId}`);
-                        throw new Error(`Failed to fetch player name for id ${playerId}`);
-                    }
-                    const playerData = await playerResponse.json();
-                    return playerData.people[0].fullName;
-                });
-    
-                allNames = await Promise.all([...teamNamePromises, ...playerNamePromises]);
-    
-                if (allNames.length > 0) {
-                    setFavoriteNames(allNames);
-                }
-    
-                if (allNames.length > 0) {
-                    const response = await fetch(`htttp://localhost:5000/api/users/fetch-youtube-videos`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ playerNames: allNames }),
+            }
+
+
+            // Fetch from API
+            const allSummaryPromises = favorites.map(async (name) => {
+                   if (cachedSummaries[name]) {
+                         console.log(`Using cached summary for ${name}`);
+                            return cachedSummaries[name]; // Use cached if available
+                     }
+                try {
+                    const response = await fetch(`http://localhost:5000/api/users/fetch-youtube-videos/${name}`, {
+                        method: 'GET',
                     });
-    
+
                     if (!response.ok) {
+                        if (response.status === 404) {
+                            console.log(`No summary found for ${name}`);
+                            return null;
+                        }
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
-    
-                    const fetchedVideos = await response.json();
-                    if (fetchedVideos && fetchedVideos.length > 0) {
-                        setVideos(fetchedVideos);
-                    }
+
+                    const fetchedSummary = await response.json();
+                    console.log(`Fetched summary for ${name}:`, fetchedSummary);
+
+                    const generatedNews = await generateNews(fetchedSummary.data.geminiVideoSummary, name);
+                   
+                    return {
+                        name,
+                        headline: generatedNews.headline,
+                        description: generatedNews.description,
+                        url: fetchedSummary.data.videoURL,
+                    };
+
+                } catch (error) {
+                     console.error(`Error fetching or generating news for ${name}:`, error);
+                      return {
+                            name,
+                            headline: null,
+                            description: null,
+                        };
+                   
                 }
-    
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
+            });
+
+            const fetchedSummaries = await Promise.all(allSummaryPromises);
+
+            // Filter out null summaries before setting them
+           const filteredSummaries = fetchedSummaries.filter(item => item != null && item.headline !== null && item.description !== null);
+            setSummaries(filteredSummaries);
+
+            // Merge fetched summaries with cached summaries, adding or replacing
+           const mergedSummaries = filteredSummaries.reduce((acc, summary) => {
+                acc[summary.name] = summary;
+                return acc
+            }, {...cachedSummaries});
+
+               
+             localStorage.setItem(cacheKey, JSON.stringify({ summaries: Object.values(mergedSummaries), favorites: favorites}));
+
+            setLoading(false);
+             prevFavoritesRef.current = favorites;
+
         }
-    
-        fetchAndSetFavoritesAndVideos();
-    }, [isLoggedIn]);
-    
-    
-    
 
+        fetchSummaries();
 
-    function renderVideos() {
+    }, [favorites, isLoggedIn]); // Re-run fetch when favorites or login status changes
+
+    async function generateNews(summary, name) {
+         try {
+            const response = await fetch(`http://localhost:5000/api/users/generate-news/${name}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ summary }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const newsData = await response.json();
+            console.log(newsData);
+            return {
+                headline: newsData.headline,
+                description: newsData.description,
+            };
+        } catch (error) {
+            console.error("Error generating news", error);
+            return {
+                headline: null,
+                description: null,
+            };
+        }
+    }
+
+    function renderSummaries() {
         if (loading) {
-            return <p>Loading videos...</p>;
+            return <p>Loading summaries...</p>;
         }
         if (error) {
             return <p>Error: {error}</p>;
@@ -133,24 +179,26 @@ function DailyDigest() {
         if (!isLoggedIn) {
             return <p>Log in and favorite teams/players to get daily digests.</p>;
         }
-        if (videos.length === 0 && favorites.length > 0) {
-            console.log(favorites);
-            return <p>No videos found for your favorite teams or players.</p>;
+
+         if (summaries.length === 0 && favorites.length > 0) {
+             return <p>No news found for your favorite teams or players.</p>;
         }
         if (favorites.length === 0) {
-            return <p>No teams or players have been selected.</p>
+             return <p>No teams or players have been selected.</p>;
         }
 
         return (
             <ul>
-                {videos.map(video => (
-                    <li key={video.videoId} className="video-list-item">
-                        <a href={`https://www.youtube.com/watch?v=${video.videoId}`} target="_blank" rel="noopener noreferrer">
-                            <img src={video.thumbnail} alt={video.title} className="video-thumbnail" />
-                        </a>
-                        <div className="video-details">
-                            <h3>{video.playerName} - {video.title}</h3>
-                            <p>{video.description}</p>
+                {summaries.map((item) => (
+                    <li key={item.name} className="summary-list-item">
+                        <div className="summary-details">
+                            <h3>{item.headline}</h3>
+                            <p>{item.description}</p>
+                            <p>
+                                <a href={item.url} target="_blank" rel="noopener noreferrer">
+                                    {item.url}
+                                </a>
+                            </p>
                         </div>
                     </li>
                 ))}
@@ -159,8 +207,8 @@ function DailyDigest() {
     }
 
     return (
-        <div className="daily-digest">
-            {renderVideos()}
+        <div>
+            {renderSummaries()}
         </div>
     );
 }
