@@ -170,7 +170,7 @@ function DailyDigest() {
 
     function renderSummaries() {
         if (loading) {
-            return <p>Loading summaries...</p>;
+            return <p>Loading Daily Digest. This may take a few moments...</p>;
         }
         if (error) {
             return <p>Error: {error}</p>;

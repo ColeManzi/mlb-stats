@@ -325,9 +325,6 @@ const PlayerInfo = () => {
                 </div>
             </div>
             <div className="background-player-container">
-                <div className="background-player-info">
-                    <p>Player Info Here</p>
-                </div>
             </div>
             <div className='stat-preview-container'>
                 <h3 className='stat-preview-container-title'>Career Stats</h3>

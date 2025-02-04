@@ -1,6 +1,7 @@
 const { ObjectId } = require('mongodb');
 const config = require('../config');
 const { runQuery } = require('../utils');
+const axios = require('axios');
 
 const { GoogleGenerativeAI, Part } = require("@google/generative-ai");
 
@@ -585,10 +586,10 @@ const fetchYoutube = async (req, res) => {
 
     try {
         const today = new Date();
-        const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const month = String(today.getMonth() + 1).padStart(2, '0');
         const day = String(today.getDate()).padStart(2, '0');
         const year = today.getFullYear();
-        const formattedDate = `${month}-${day}-${year}`; // Format as YYYY-MM-DD for bigquery
+        const formattedDate = `${month}-${day}-${year}`;
 
         const sqlQuery = `
             SELECT
@@ -603,31 +604,54 @@ const fetchYoutube = async (req, res) => {
           `;
         const queryResults = await runQuery(sqlQuery, { date_parameter: formattedDate, name_parameter: name });
 
+        let geminiSummary = '';
+        let videoURL = '';
+
         if (!queryResults || queryResults.length === 0) {
-            return res.status(404).json({ message: 'No matching video summary found.' });
+            console.log(`No results in big query for ${name}. Sending request to cloud function.`);
+
+            try {
+                    // Call cloud function to create a new summary.
+                    const cloudFunctionResponse = await axios.post(
+                    `https://us-east1-project-sandbox-445319.cloudfunctions.net/youtube-summarizer-2`,
+                        { query: name }, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                if (cloudFunctionResponse.status !== 200) {
+                    return res.status(cloudFunctionResponse.status).json({ error: 'Error from cloud function, status is not 200' });
+                }
+                    console.log(`Cloud function completed. Getting data to be summarized for ${name}.`);
+                    //console.log(cloudFunctionResponse.data);
+                    if(cloudFunctionResponse.data) {
+                        geminiSummary = cloudFunctionResponse.data[0].geminiVideoSummary;
+                        videoURL = cloudFunctionResponse.data[0].videoURL;
+                    } else {
+                    return res.status(404).json({message: "No data returned from cloud function."});
+                }
+                } catch (error) {
+                    console.error('Error fetching from cloud function:', error);
+                    return res.status(500).json({ error: 'Failed to retrieve data from the cloud function', details: error.message});
+            }
+        } else {
+            geminiSummary = queryResults[0].geminiVideoSummary;
+            videoURL = queryResults[0].videoURL;
         }
-        
-        const geminiSummary = queryResults[0].geminiVideoSummary;
-        const videoURL = queryResults[0].videoURL;
+
 
         res.status(200).json({
             data: {
-              geminiVideoSummary: geminiSummary,
-              videoURL: videoURL
+                geminiVideoSummary: geminiSummary,
+                videoURL: videoURL
             }
         });
 
     } catch (error) {
         console.error('Error retrieving video summary from BigQuery:', error);
-        res.status(500).json({ error: 'Failed to retrieve video summary from BigQuery' });
+       return res.status(500).json({ error: 'Failed to retrieve video summary from BigQuery', details: error.message });
     }
-};
-
-const formatDate = (date) => {
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Add 1 because getMonth() returns 0-11
-    const day = String(date.getDate()).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${month}-${day}-${year}`;
 };
 
 const generateNews = async (req, res) => {
@@ -640,7 +664,7 @@ const generateNews = async (req, res) => {
 
     try {
         const prompt = `
-        Create a concise news headline and a detailed description from the following summary: ${summary}. The subject of the summary is ${name}.
+        Create a concise news headline and a detailed description from the following summary: ${summary}. RELATE THIS NEWS TO ${name}.
 
         The headline should be attention-grabbing and clearly indicate the main topic of the summary.
 
@@ -663,6 +687,7 @@ const generateNews = async (req, res) => {
         });
 
         const response = result.response;
+        console.log('Raw response:', response);
         let responseText = response.text();
 
         // Remove code fences, if present
@@ -693,17 +718,6 @@ const generateNews = async (req, res) => {
             };
         }
 
-        const timestamp = formatDate(new Date());
-        /*
-        await updateBigQuery({
-            body: {
-                headline: responseBody.headline,
-                description: responseBody.description,
-                timestamp: timestamp
-            }
-        });
-        */
-
         // Only send response after the BigQuery insert is complete
         return res.status(200).json(responseBody); // Return the headline and description
 
@@ -713,37 +727,6 @@ const generateNews = async (req, res) => {
         if (!res.headersSent) {
             return res.status(500).json({ error: 'Failed to generate news', details: error.message });
         }
-    }
-};
-
-const updateBigQuery = async (req) => {
-    const { headline, description, timestamp } = req.body;
-
-    if (!headline || !description || !timestamp) {
-        throw new Error('Headline, description, and timestamp are required in the request body');
-    }
-
-    try {
-        const insertQuery = `
-            INSERT INTO \`project-sandbox-445319.youtube_summaries.generated_news\` (headline, description, timestamp)
-            VALUES (@headline, @description, @timestamp)
-        `;
-
-        const insertResponse = await runQuery(insertQuery, {
-            headline,
-            description,
-            timestamp
-        });
-
-        // Assuming insertResponse returns rows, you may need to check success status in a different way.
-        if (!insertResponse || insertResponse.length === 0) {
-            console.log("Error: Could not insert into BigQuery");
-            throw new Error("Could not insert into BigQuery");
-        }
-
-    } catch (error) {
-        console.error('Error writing to BigQuery:', error);
-        throw new Error('Failed to insert news into BigQuery');
     }
 };
 
