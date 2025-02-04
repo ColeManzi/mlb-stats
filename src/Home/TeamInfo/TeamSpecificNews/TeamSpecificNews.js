@@ -7,7 +7,7 @@ function TeamSpecificNews() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { teamId } = useParams();
-    const backendUrl = 'http://localhost:5000/api/users/bigquery/team-news';
+    const backendUrl = `${process.env.REACT_APP_API_URL}/api/users/bigquery/team-news`;
     const cachedDataRef = useRef({});
 
     useEffect(() => {

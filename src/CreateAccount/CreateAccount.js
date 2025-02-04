@@ -26,7 +26,7 @@ function CreateAccount({ open, handleClose }) {
 
     try {
         const response = await axios.post(
-            'http://localhost:5000/api/users',
+            `${process.env.REACT_APP_API_URL}/api/users`,
             {
                 firstName: firstName,
                 lastName: lastName,

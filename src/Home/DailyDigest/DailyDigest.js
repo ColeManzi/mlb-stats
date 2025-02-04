@@ -80,7 +80,7 @@ function DailyDigest() {
                             return cachedSummaries[name]; // Use cached if available
                      }
                 try {
-                    const response = await fetch(`http://localhost:5000/api/users/fetch-youtube-videos/${name}`, {
+                    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/fetch-youtube-videos/${name}`, {
                         method: 'GET',
                     });
 
@@ -141,7 +141,7 @@ function DailyDigest() {
 
     async function generateNews(summary, name) {
          try {
-            const response = await fetch(`http://localhost:5000/api/users/generate-news/${name}`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/generate-news/${name}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

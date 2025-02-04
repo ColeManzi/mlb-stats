@@ -99,7 +99,7 @@ const MLBSelector = () => {
 
     try {
       const response = await axios.put(
-        'http://localhost:5000/api/users/add-favorites',
+        `${process.env.REACT_APP_API_URL}/api/users/add-favorites`,
         { favoriteTeams: teamIds, favoritePlayers: playerIds },
         {
           headers: {

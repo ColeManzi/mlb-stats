@@ -62,7 +62,7 @@ const TeamInfo = () => {
           const accessToken = localStorage.getItem('accessToken');
           if (accessToken) {
               try {
-                  const response = await axios.get('http://localhost:5000/api/users/fetch-players', {
+                  const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/users/fetch-players`, {
                       headers: {
                           Authorization: `Bearer ${accessToken}`
                       }
@@ -85,7 +85,7 @@ const TeamInfo = () => {
             const accessToken = localStorage.getItem('accessToken');
             if (accessToken) {
                 try {
-                    const response = await axios.get('http://localhost:5000/api/users/fetch-teams', {
+                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/users/fetch-teams`, {
                         headers: {
                             Authorization: `Bearer ${accessToken}`
                         }
@@ -176,7 +176,7 @@ const TeamInfo = () => {
     const handleAddPlayerId = async (playerId) => {
         try {
             const accessToken = localStorage.getItem('accessToken')
-            const response = await axios.put('http://localhost:5000/api/users', {
+            const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/users`, {
                 playerId: playerId
             }, {
                 headers: {
@@ -221,7 +221,7 @@ const TeamInfo = () => {
     const handleAddTeamId = async (teamId) => {
         try {
             const accessToken = localStorage.getItem('accessToken');
-            const response = await axios.put('http://localhost:5000/api/users/add-team', {
+            const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/users/add-team`, {
                 teamId: teamId
             }, {
                 headers: {
@@ -269,7 +269,7 @@ const TeamInfo = () => {
     const handleRemovePlayerId = async (playerId) => {
         try {
             const accessToken = localStorage.getItem('accessToken');
-            const response = await axios.delete('http://localhost:5000/api/users', {
+            const response = await axios.delete(`${process.env.REACT_APP_API_URL}/api/users`, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 },
@@ -310,7 +310,7 @@ const TeamInfo = () => {
     const handleRemoveTeamId = async (teamId) => {
         try {
             const accessToken = localStorage.getItem('accessToken');
-            const response = await axios.delete('http://localhost:5000/api/users/remove-team', {
+            const response = await axios.delete(`${process.env.REACT_APP_API_URL}/api/users/remove-team`, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 },

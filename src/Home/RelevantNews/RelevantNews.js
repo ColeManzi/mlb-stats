@@ -30,7 +30,7 @@ const RelevantNews = () => {
 
 
       try {
-        const response = await fetch('http://localhost:5000/api/users/bigquery/relevant-news');
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/bigquery/relevant-news`);
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }

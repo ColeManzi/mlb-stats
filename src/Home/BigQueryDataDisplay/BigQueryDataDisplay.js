@@ -38,8 +38,8 @@ function BigQueryDataDisplay() {
 
             try {
                 const apiUrl = newsType === 'player'
-                    ? 'http://localhost:5000/api/users/bigquery/followed-players'
-                    : 'http://localhost:5000/api/users/bigquery/followed-teams';
+                    ? `${process.env.REACT_APP_API_URL}/api/users/bigquery/followed-players`
+                    : `${process.env.REACT_APP_API_URL}/api/users/bigquery/followed-teams`;
 
                 const response = await axios.get(apiUrl);
                 if (response.status === 200) {
