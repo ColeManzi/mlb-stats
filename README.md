@@ -120,9 +120,9 @@ Before you begin, ensure you have the following installed:
 
 ## API Documentation
 
-- **MLB API:** Used to fetch player and team data.  Documentation can be found [here](Add MLB API Link).
+- **MLB API:** Used to fetch player and team data.  Documentation can be found [here](https://github.com/MajorLeagueBaseball/google-cloud-mlb-hackathon).
 - **YouTube Data API:** Retrieves game highlight videos. Learn more [here](https://developers.google.com/youtube/v3).
-- **Gemini API:** Summarizes articles and videos into short descriptions. [Gemini API Documentation](Add Gemini API Link if available).
+- **Gemini API:** Summarizes articles and videos into short descriptions. [Gemini API Documentation](https://ai.google.dev/gemini-api/docs).
 
 ## Future Enhancements
 
