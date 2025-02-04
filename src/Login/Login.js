@@ -39,7 +39,7 @@ function Login({ open, handleClose }) {
             setError(
                 'Error fetching favorite teams and players'
             );
-            return []; // Return empty array in case of error
+            return []; 
         } finally {
             setLoadingTeamsPlayers(false);
         }
