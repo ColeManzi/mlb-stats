@@ -1,70 +1,147 @@
-# Getting Started with Create React App
+# Fan Highlight Hub
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Available Scripts
+## Table of Contents
 
-In the project directory, you can run:
+- [Overview](#overview)
+- [Features](#features)
+- [Technologies Used](#technologies-used)
+- [Project Setup](#project-setup)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+    - [Environment Variables](#environment-variables)
+- [Running the App](#running-the-app)
+- [API Documentation](#api-documentation)
+- [Future Enhancements](#future-enhancements)
+- [Contributing](#contributing)
+- [License](#license)
 
-### `npm start`
+## Overview
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Fan Highlight Hub is a web application that provides users with the latest MLB news, personalized based on their favorite players and teams. It offers trending news, game summaries, and a customized Daily Digest powered by AI. The backend is built with Node.js and stores user information in MongoDB, while the frontend is powered by React.js.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Features
 
-### `npm test`
+- **Trending News:** Displays popular news articles for MLB players and teams based on fan interactions.
+- **Latest Games:** Shows the outcomes of recent MLB games, with AI-generated summaries and video highlights.
+- **Player and Team Search:** Users can search for specific players or teams to view detailed information and news.
+- **Favorites and Daily Digest:** Registered users can favorite players and teams, receiving tailored updates in the Daily Digest section.
+- **Account Management:** Users can sign up, log in, and manage their favorite teams and players.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Technologies Used
 
-### `npm run build`
+- **Frontend:** React.js
+- **Backend:** Node.js with Express
+- **Database:** MongoDB
+- **APIs:**
+    - MLB API: Provides player, team, and game data.
+    - YouTube Data API: Fetches game highlight videos.
+    - Gemini AI Model: Summarizes news articles and videos into concise descriptions.
+- **Cloud Services:**
+    - Google Cloud BigQuery: Stores fan interaction data and search results.
+    - Google Cloud Functions: Automates content generation tasks.
+    - Google Cloud Scheduler: Keeps popular content up-to-date.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Project Setup
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Prerequisites
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Before you begin, ensure you have the following installed:
 
-### `npm run eject`
+- **Node.js:** [Download Node.js](https://nodejs.org/)
+- **MongoDB:** Either run a local instance or use [MongoDB Atlas](https://www.mongodb.com/atlas/database) for cloud storage.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Installation
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+1.  **Clone the repository:**
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+    ```bash
+    git clone https://github.com/ColeManzi/mlb-stats.git
+    cd mlb-stats
+    ```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+2.  **Install frontend dependencies:**
 
-## Learn More
+    ```bash
+    npm install
+    ```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+3.  **Install backend dependencies:**
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+    ```bash
+    cd backend
+    npm install
+    ```
 
-### Code Splitting
+### Environment Variables
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+1.  In the root of your project, create a `.env` file for frontend configuration.  This file **should not be committed to version control**.  Add the following, replacing the placeholder values with your actual API keys and connection string:
 
-### Analyzing the Bundle Size
+    ```
+    REACT_APP_API_KEY=your_google_gemini_api_key
+    ```
+2.  Now in your backend folder create create another `.env` file for backend configuration. Add the following:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+    ```
+    DB_PASSWORD=db_username
+    DB_USERNAME=db_password
+    SECRET_KEY=key used for encryption
+    GOOGLE_APPLICATION_CREDENTIALS='../config/project_id.json'
+    REACT_APP_API_KEY=your_google_gemini_api_key
+    YOUTUBE_API_KEY=youtube api key
+    PROJECT_ID=google_project_id
+    LOCATION=us-east1
+    BIGQUERY_DATASET_ID=dataset_where_you_store_the_gemini_summaries
+    ```
 
-### Making a Progressive Web App
+    **Important Security Note:** Storing API keys in a `.env` file is fine for local development.  For production deployments, *never* commit the `.env` file. Instead, configure these environment variables directly within your hosting provider (e.g., Heroku, AWS, Google Cloud).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## Running the App
 
-### Advanced Configuration
+1.  **Start fronted Server:**
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+    ```bash
+    npm start
+    ```
 
-### Deployment
+2.  **Start backend Server:**
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+    Open another terminal and run:
 
-### `npm run build` fails to minify
+    ```bash
+    cd backend
+    node index.js
+    ```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+3.  **Access the Application:**
+
+    Once both servers are running, open your browser and navigate to `http://localhost:3000`.
+
+## API Documentation
+
+- **MLB API:** Used to fetch player and team data.  Documentation can be found [here](Add MLB API Link).
+- **YouTube Data API:** Retrieves game highlight videos. Learn more [here](https://developers.google.com/youtube/v3).
+- **Gemini API:** Summarizes articles and videos into short descriptions. [Gemini API Documentation](Add Gemini API Link if available).
+
+## Future Enhancements
+
+- **Push Notifications:** Implement notifications for game results and player/team updates.
+- **Mobile Optimization:** Improve the user experience on mobile devices.
+- **Email Notifications:** Send the user unqiue emails regarding the latest information on their favorited teams/players.
+- **Advanced Search:** Allow users to search for specific games, player statistics, and team standings.
+- **CI/CD Pipeline:** Automate the build, test, and deployment process with a CI/CD pipeline (e.g., GitHub Actions, GitLab CI).
+
+## Contributing
+
+Contributions are welcome! To contribute:
+
+1.  Fork this repository.
+2.  Create a new branch: `git checkout -b feature-branch`.
+3.  Make your changes and commit them: `git commit -m 'Add feature'`.
+4.  Push to the branch: `git push origin feature-branch`.
+5.  Open a pull request.  Please include a clear description of the changes and their purpose.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
