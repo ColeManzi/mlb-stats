@@ -4,7 +4,7 @@ const config = require('../config')
 const utils = require('../utils')
 const SECRET_KEY = process.env.SECRET_KEY || 'secret key'
 const { hashPassword } = require('../utils');
-
+const bcrypt = require('bcrypt');
 
 const login = async (req, res) => {
     const { email, password } = req.body;
@@ -18,11 +18,11 @@ const login = async (req, res) => {
         if (!user) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
-        //const passwordMatch = await bcrypt.compare(password, user.password);
+        const passwordMatch = await bcrypt.compare(password, user.password);
 
-        //if (!passwordMatch) {
-        //    return res.status(401).json({ message: 'Invalid credentials' });
-        //}
+        if (!passwordMatch) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
         const accessToken = jwt.sign({ userId: user._id, username: user.username }, SECRET_KEY, {
             expiresIn: '15m',
         });

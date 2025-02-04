@@ -91,6 +91,8 @@ function Account() {
         localStorage.removeItem('accessToken')
         localStorage.removeItem('refreshToken')
         sessionStorage.removeItem('favorites')
+        localStorage.removeItem('dailyDigestData')
+
         navigate("/");
     };
 

@@ -64,11 +64,9 @@ function Login({ open, handleClose }) {
 
         sessionStorage.setItem('favorites', JSON.stringify(favoriteNames));
 
-
-
         setLoginError(null);
         handleClose();
-        navigate('/');
+        navigate('/account');
       } else {
         setLoginError('Invalid credentials. Please check your email and password.');
         console.log("Invalid login");
