@@ -1,7 +1,7 @@
 .background-player-info-and-headshot-container {
     display: flex;
     align-items: center;
-    width: 50%;
+    width: 45%;
     margin-bottom: 10px;
     border-radius: 8px;
 }
@@ -40,7 +40,7 @@
     flex-basis: 66.667%;
     flex-grow: 1;
     padding: 10px;
-    height: 25vh;
+    height: fit-content;
     background-color: white;
     color: black;
     border-radius: 8px;
